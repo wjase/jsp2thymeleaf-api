@@ -6,6 +6,7 @@
 package com.cybernostics.jsp2thymeleaf.api;
 
 import com.cybernostics.forks.jsp2x.JspTree;
+import static com.cybernostics.jsp2thymeleaf.api.JspTreeUtils.nameOrNone;
 import java.util.Arrays;
 import java.util.List;
 import org.jdom2.Attribute;
@@ -14,7 +15,6 @@ import org.jdom2.Element;
 import org.jdom2.Namespace;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 /**
  *
@@ -24,7 +24,7 @@ public class ElementConverter implements JspTreeConverter
 {
     private final Namespace xmlns = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
 
-    public List<Content> elementContentFor(JspTree jspTree, JspConverterContext context)
+    public List<Content> processElement(JspTree jspTree, JspConverterContext context)
     {
         Optional<Element> maybeElement = createElement(jspTree);
         if(maybeElement.isPresent()){
@@ -36,11 +36,6 @@ public class ElementConverter implements JspTreeConverter
         }
 
         return getChildContent(jspTree, context);
-    }
-    
-    public static String nameOrNone(JspTree jspTree)
-    {
-        return jspTree.getChildCount() > 0 ? jspTree.name() : "no name";
     }
     
     protected List<Content> getChildContent(JspTree jspTree, JspConverterContext context){
@@ -63,20 +58,6 @@ public class ElementConverter implements JspTreeConverter
         return attributes;
     }
     
-    public Optional<JspTree> getAttribute(JspTree jtElement, String attributeName)
-    {
-        final JspTree attributes = jtElement.attributes();
-        for (int i = 0; i < attributes.getChildCount(); i++)
-        {
-            JspTree jspTree = attributes.getChild(i);
-            if (jspTree.name().equals(attributeName))
-            {
-                return Optional.of(jspTree);
-            }
-        }
-        return Optional.empty();
-    }
-
     protected void addAttributes(Element parent, JspTree jspTree){
         getAttributes(jspTree).stream().forEach((entry)->parent.setAttribute(entry));
     }

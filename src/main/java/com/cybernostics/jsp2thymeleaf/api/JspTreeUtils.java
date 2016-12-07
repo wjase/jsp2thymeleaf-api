@@ -6,6 +6,7 @@
 package com.cybernostics.jsp2thymeleaf.api;
 
 import com.cybernostics.forks.jsp2x.JspTree;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 /**
@@ -39,4 +40,26 @@ public class JspTreeUtils
         return String.format("${%s}", input);
     }
     
+    public static Optional<JspTree> getAttribute(JspTree jtElement, String attributeName)
+    {
+        final JspTree attributes = jtElement.attributes();
+        for (int i = 0; i < attributes.getChildCount(); i++)
+        {
+            JspTree jspTree = attributes.getChild(i);
+            if (jspTree.name().equals(attributeName))
+            {
+                return Optional.of(jspTree);
+            }
+        }
+        return Optional.empty();
+    }
+    
+    public static DomTag tagFor(JspTree jspTree){
+        return new DomTag(nameOrNone(jspTree));
+    }
+    
+    public static String nameOrNone(JspTree jspTree)
+    {
+        return jspTree.getChildCount() > 0 ? jspTree.name() : "no name";
+    }
 }

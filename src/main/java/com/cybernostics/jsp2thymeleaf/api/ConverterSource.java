@@ -6,16 +6,9 @@
 package com.cybernostics.jsp2thymeleaf.api;
 
 import com.cybernostics.forks.jsp2x.JspTree;
-import java.util.List;
-import org.jdom2.Content;
+import java.util.Optional;
 
-/**
- *
- * @author jason
- */
-public interface JspTreeConverter
+public interface ConverterSource
 {
-    List<Content> processElement(JspTree jspTree, JspConverterContext context);
-    boolean canHandle(JspTree jspTree);
-
+    Optional<JspTreeConverter> converterFor(JspTree jspTree); 
 }
