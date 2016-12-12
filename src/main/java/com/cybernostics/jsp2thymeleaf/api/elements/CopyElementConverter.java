@@ -3,31 +3,37 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api;
+package com.cybernostics.jsp2thymeleaf.api.elements;
 
+import static com.cybernostics.forks.jsp2x.JspParser.EL_EXPR;
 import com.cybernostics.forks.jsp2x.JspTree;
-import static com.cybernostics.jsp2thymeleaf.api.JspTreeUtils.nameOrNone;
+import com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils;
+import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.nameOrNone;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.jdom2.Attribute;
 import org.jdom2.Content;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
-import java.util.ArrayList;
-import java.util.Optional;
 
 /**
  *
  * @author jason
  */
-public class ElementConverter implements JspTreeConverter
+public class CopyElementConverter implements JspTreeConverter
 {
+
     private final Namespace xmlns = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
 
-    public List<Content> processElement(JspTree jspTree, JspConverterContext context)
+    protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
+
+    public List<Content> processElement(JspTree jspTree, JspTreeConverterContext context)
     {
         Optional<Element> maybeElement = createElement(jspTree);
-        if(maybeElement.isPresent()){
+        if (maybeElement.isPresent())
+        {
             Element element = maybeElement.get();
             element.removeNamespaceDeclaration(xmlns);
             element.addContent(getChildContent(jspTree, context));
@@ -37,8 +43,9 @@ public class ElementConverter implements JspTreeConverter
 
         return getChildContent(jspTree, context);
     }
-    
-    protected List<Content> getChildContent(JspTree jspTree, JspConverterContext context){
+
+    protected List<Content> getChildContent(JspTree jspTree, JspTreeConverterContext context)
+    {
         List<Content> childContent = new ArrayList<>();
         JspTreeUtils.doWithChildren(jspTree, (i, eachChild) ->
         {
@@ -51,24 +58,28 @@ public class ElementConverter implements JspTreeConverter
         });
         return childContent;
     }
-    
-    protected List<Attribute> getAttributes(JspTree jspTree){
+
+    protected List<Attribute> getAttributes(JspTree jspTree)
+    {
         List<Attribute> attributes = new ArrayList<>();
         JspTreeUtils.doWithAttributes(jspTree, (i, eachAtt) -> attributes.add(createAttribute(eachAtt)));
         return attributes;
     }
-    
-    protected void addAttributes(Element parent, JspTree jspTree){
-        getAttributes(jspTree).stream().forEach((entry)->parent.setAttribute(entry));
+
+    protected void addAttributes(Element parent, JspTree jspTree)
+    {
+        getAttributes(jspTree).stream().forEach((entry) -> parent.setAttribute(entry));
     }
-    
-    protected String attributeNameFor(JspTree jspTree){
+
+    protected String attributeNameFor(JspTree jspTree)
+    {
         return jspTree.name();
     }
-    
-    protected String valueFor(JspTree jspTree){
+
+    protected String valueFor(JspTree jspTree)
+    {
         return jspTree.treeValue().toStringTree();
-        
+
     }
 
     protected Optional<Element> createElement(JspTree jspTree)
@@ -78,13 +89,23 @@ public class ElementConverter implements JspTreeConverter
         element.setNamespace(newNamespaceForElement(jspTree));
         return Optional.of(element);
     }
-    
-    protected String newNameForElement(JspTree jspTree){
+
+    protected String newNameForElement(JspTree jspTree)
+    {
         return nameOrNone(jspTree);
     }
-    
-    protected Attribute createAttribute(JspTree jspTreeAttribute){
-        return new Attribute(jspTreeAttribute.name(), jspTreeAttribute.treeValue().toStringTree());
+
+    protected Attribute createAttribute(JspTree jspTreeAttribute)
+    {
+        JspTree jspTreeAttributeValue = jspTreeAttribute.treeValue();
+        String attributeText = jspTreeAttributeValue.toStringTree();
+
+        if (jspTreeAttributeValue.getType() == EL_EXPR)
+        {
+            attributeText = expressionConverter.convert("${" + attributeText + "}");
+        }
+
+        return new Attribute(jspTreeAttribute.name(), attributeText);
     }
 
     @Override
@@ -102,6 +123,5 @@ public class ElementConverter implements JspTreeConverter
     {
         return xmlns;
     }
-    
 
 }

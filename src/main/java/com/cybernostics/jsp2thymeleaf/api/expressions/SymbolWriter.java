@@ -1,0 +1,70 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.cybernostics.jsp2thymeleaf.api.expressions;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.el.BinaryOperator;
+import org.apache.commons.el.UnaryOperator;
+
+/**
+ *
+ * @author jason
+ */
+public class SymbolWriter
+{
+
+    private static Map<String, String> symbolMap = new HashMap<>();
+
+    private static void add(String shortSymbol, String textSymbol)
+    {
+        symbolMap.put(textSymbol, shortSymbol);
+    }
+
+    static
+    {
+        add("/", "div");
+        add("%", "mod");
+        add("==", "eq");
+        add("<", "lt");
+        add(">", "gt");
+        add("<=", "le");
+        add(">=", "ge");
+        add("&&", "and");
+        add("||", "or");
+        add("!", "not");
+
+    }
+
+    public static void write(Writer w, BinaryOperator operator)
+    {
+        String op = operator.getOperatorSymbol();
+        try
+        {
+            w.write(symbolMap.getOrDefault(op, op));
+        } catch (IOException ex)
+        {
+            Logger.getLogger(SymbolWriter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void write(Writer w, UnaryOperator operator)
+    {
+        String op = operator.getOperatorSymbol();
+        try
+        {
+            w.write(symbolMap.getOrDefault(op, op));
+        } catch (IOException ex)
+        {
+            Logger.getLogger(SymbolWriter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+}

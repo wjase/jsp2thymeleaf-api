@@ -1,6 +1,4 @@
-package com.cybernostics.jsp2thymeleaf.api;
-
-import com.cybernostics.jsp2thymeleaf.api.JspTreeConverter;
+package com.cybernostics.jsp2thymeleaf.api.elements;
 
 /**
  *

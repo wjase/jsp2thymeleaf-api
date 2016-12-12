@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api;
+package com.cybernostics.jsp2thymeleaf.api.util;
 
 import com.cybernostics.forks.jsp2x.JspTree;
+import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -39,7 +40,7 @@ public class JspTreeUtils
     {
         return String.format("${%s}", input);
     }
-    
+
     public static Optional<JspTree> getAttribute(JspTree jtElement, String attributeName)
     {
         final JspTree attributes = jtElement.attributes();
@@ -53,11 +54,12 @@ public class JspTreeUtils
         }
         return Optional.empty();
     }
-    
-    public static DomTag tagFor(JspTree jspTree){
-        return new DomTag(nameOrNone(jspTree));
+
+    public static PrefixedName tagFor(JspTree jspTree)
+    {
+        return prefixedNameFor(nameOrNone(jspTree));
     }
-    
+
     public static String nameOrNone(JspTree jspTree)
     {
         return jspTree.getChildCount() > 0 ? jspTree.name() : "no name";

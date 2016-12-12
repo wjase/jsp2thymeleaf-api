@@ -3,9 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api;
+package com.cybernostics.jsp2thymeleaf.api.elements;
 
 import com.cybernostics.forks.jsp2x.JspTree;
+import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
+import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +16,7 @@ import java.util.Optional;
  *
  * @author jason
  */
-public abstract class TagConverterSource implements ConverterSource
+public abstract class TagConverterSource implements JspTreeConverterSource
 {
 
     private Map<String, JspTreeConverter> converterMap = new HashMap<>();
@@ -39,15 +41,15 @@ public abstract class TagConverterSource implements ConverterSource
         return uri;
     }
 
-    public Optional<JspTreeConverter> converterFor(DomTag domTag)
+    public Optional<JspTreeConverter> converterFor(PrefixedName domTag)
     {
-        return Optional.ofNullable(converterMap.get(domTag.getTagname()));
+        return Optional.ofNullable(converterMap.get(domTag.getName()));
     }
 
     @Override
     public Optional<JspTreeConverter> converterFor(JspTree jspTree)
     {
-        DomTag domTag = new DomTag(jspTree.name());
+        PrefixedName domTag = prefixedNameFor(jspTree.name());
         return converterFor(domTag);
     }
 

@@ -26,5 +26,11 @@
             <version>3.2.2</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>commons-el</groupId>
+            <artifactId>commons-el</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

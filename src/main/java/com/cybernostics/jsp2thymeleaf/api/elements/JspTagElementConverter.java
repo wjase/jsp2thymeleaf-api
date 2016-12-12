@@ -3,12 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api;
+package com.cybernostics.jsp2thymeleaf.api.elements;
 
 import com.cybernostics.forks.jsp2x.JspTree;
-import com.cybernostics.jsp2thymeleaf.api.NewAttributeBuilder;
-import com.cybernostics.jsp2thymeleaf.api.ElementConverter;
-import static com.cybernostics.jsp2thymeleaf.api.SetUtils.setOf;
+import static com.cybernostics.jsp2thymeleaf.api.util.SetUtils.setOf;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,16 +16,16 @@ import org.apache.commons.collections.ListUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Namespace;
 
-public abstract class JspTagElementConverter extends ElementConverter implements TagConverter
+public abstract class JspTagElementConverter extends CopyElementConverter implements TagConverter
 {
 
     protected final Namespace thymeleafNS = Namespace.getNamespace("th", "http://www.thymeleaf.org");
     protected final Namespace xmlNS = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
     protected Set<String> attributesToRemove = setOf();
     protected NewAttributeBuilder newAttributeBuilder = new NewAttributeBuilder.NOPNewAttributeBuilder();
-    protected final Namespace thNamespace = Namespace.getNamespace("th", "http://www.thymeleaf.org");
     protected String appliesTo;
     protected String convertedElementName;
+    protected ELExpressionConverter exprConverter = new ELExpressionConverter();
 
     public JspTagElementConverter()
     {
@@ -75,7 +73,7 @@ public abstract class JspTagElementConverter extends ElementConverter implements
     @Override
     protected Namespace newNamespaceForElement(JspTree jspTree)
     {
-        return thNamespace;
+        return thymeleafNS;
     }
 
     @Override

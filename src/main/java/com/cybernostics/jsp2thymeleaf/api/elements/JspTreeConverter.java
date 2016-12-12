@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api;
+package com.cybernostics.jsp2thymeleaf.api.elements;
 
 import com.cybernostics.forks.jsp2x.JspTree;
 import java.util.List;
@@ -13,8 +13,9 @@ import org.jdom2.Content;
  *
  * @author jason
  */
-public interface JspConverterContext
+public interface JspTreeConverter
 {
-    List<Content> contentFor(JspTree eachChild, JspConverterContext context);
-    
+    List<Content> processElement(JspTree jspTree, JspTreeConverterContext context);
+    boolean canHandle(JspTree jspTree);
+
 }
