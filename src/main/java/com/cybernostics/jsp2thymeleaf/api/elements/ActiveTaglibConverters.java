@@ -8,7 +8,6 @@ package com.cybernostics.jsp2thymeleaf.api.elements;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterSource;
 
 /**
  * ActiveTaglibConverters keeps track of taglib converters which have been
@@ -35,7 +34,7 @@ public class ActiveTaglibConverters
      */
     public static void addTaglibConverter(String prefix, JspTreeConverterSource converterSource)
     {
-        activeTagConverters.put(prefix, converterSource);
+        activeTagConverters.putIfAbsent(prefix, converterSource);
     }
 
     /**

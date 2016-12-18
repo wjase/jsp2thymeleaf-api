@@ -17,9 +17,24 @@ import org.jdom2.Attribute;
  */
 public interface NewAttributeBuilder
 {
+
+    public static String stripELQuotes(String value)
+    {
+        if (!value.startsWith("${"))
+        {
+            return value;
+        }
+        if (value.equals("${}"))
+        {
+            return "";
+        }
+        return value.substring(2, value.length() - 1);
+    }
+
     List<Attribute> buildNewAttributes(Map<String, String> currentValues);
-    
-    public static class NOPNewAttributeBuilder implements NewAttributeBuilder{
+
+    public static class NOPNewAttributeBuilder implements NewAttributeBuilder
+    {
 
         @Override
         public List<Attribute> buildNewAttributes(Map<String, String> currentValues)
@@ -27,12 +42,12 @@ public interface NewAttributeBuilder
             return Arrays.asList();
         }
     }
-    
+
     static String ucfirst(String in)
     {
         return Character.toUpperCase(in.charAt(0)) + in.substring(1);
     }
-    
+
     static String humanReadable(String input)
     {
         return Arrays.asList(input.replaceAll("(^\\$\\{)|(\\}$)", "").split("\\."))

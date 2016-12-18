@@ -5,7 +5,6 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.expressions;
 
-import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +34,7 @@ public class ActiveExpressionConverters
      */
     public static void addTaglibConverter(String prefix, FunctionConverterSource converterSource)
     {
-        activeExpressionConverters.put(prefix, converterSource);
+        activeExpressionConverters.putIfAbsent(prefix, converterSource);
     }
 
     /**

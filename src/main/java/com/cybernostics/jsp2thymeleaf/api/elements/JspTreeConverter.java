@@ -15,7 +15,9 @@ import org.jdom2.Content;
  */
 public interface JspTreeConverter
 {
+
     List<Content> processElement(JspTree jspTree, JspTreeConverterContext context);
+
     boolean canHandle(JspTree jspTree);
 
 }

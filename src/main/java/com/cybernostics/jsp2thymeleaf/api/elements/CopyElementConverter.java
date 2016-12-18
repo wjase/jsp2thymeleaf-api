@@ -29,8 +29,10 @@ public class CopyElementConverter implements JspTreeConverter
 
     protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
 
+    @Override
     public List<Content> processElement(JspTree jspTree, JspTreeConverterContext context)
     {
+        ActiveNamespaces.add(newNamespaceForElement(jspTree));
         Optional<Element> maybeElement = createElement(jspTree);
         if (maybeElement.isPresent())
         {
