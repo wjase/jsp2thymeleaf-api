@@ -8,8 +8,8 @@ package com.cybernostics.jsp2thymeleaf.api.elements;
 import com.cybernostics.forks.jsp2x.JspTree;
 import java.util.Optional;
 
-public interface JspTreeConverterSource
+public interface JspTreeAttributeConverterSource
 {
 
-    Optional<JspTreeConverter> converterFor(JspTree jspTree);
+    Optional<AttributeValueElementConverter> attributeConverterFor(JspTree jspTree);
 }

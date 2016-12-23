@@ -16,11 +16,15 @@ import java.util.Optional;
  *
  * @author jason
  */
-public abstract class TagConverterSource implements JspTreeConverterSource
+public class TagConverterSource implements JspTreeConverterSource, JspTreeAttributeConverterSource
 {
 
     private Map<String, JspTreeConverter> converterMap = new HashMap<>();
     private String uri;
+
+    public TagConverterSource()
+    {
+    }
 
     public TagConverterSource(String forUri, TagConverter... converters)
     {
@@ -29,6 +33,15 @@ public abstract class TagConverterSource implements JspTreeConverterSource
         {
             add(converter);
         }
+    }
+
+    public TagConverterSource withConverters(TagConverter... converters)
+    {
+        for (TagConverter converter : converters)
+        {
+            add(converter);
+        }
+        return this;
     }
 
     /**
@@ -57,4 +70,11 @@ public abstract class TagConverterSource implements JspTreeConverterSource
     {
         converterMap.put(converter.getApplicableTag(), converter);
     }
+
+    @Override
+    public Optional<AttributeValueElementConverter> attributeConverterFor(JspTree jspTree)
+    {
+        return Optional.empty();
+    }
+
 }

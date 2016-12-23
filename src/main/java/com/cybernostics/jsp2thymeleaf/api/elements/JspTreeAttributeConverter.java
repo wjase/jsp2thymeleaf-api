@@ -6,10 +6,18 @@
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
 import com.cybernostics.forks.jsp2x.JspTree;
-import java.util.Optional;
+import java.util.List;
+import org.jdom2.Attribute;
 
-public interface JspTreeConverterSource
+/**
+ *
+ * @author jason
+ */
+public interface JspTreeAttributeConverter
 {
 
-    Optional<JspTreeConverter> converterFor(JspTree jspTree);
+    List<Attribute> processElement(JspTree jspTree);
+
+    boolean canHandle(JspTree jspTree);
+
 }

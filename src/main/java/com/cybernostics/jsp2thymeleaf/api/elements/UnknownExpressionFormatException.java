@@ -5,11 +5,15 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import com.cybernostics.forks.jsp2x.JspTree;
-import java.util.Optional;
-
-public interface JspTreeConverterSource
+/**
+ *
+ * @author jason
+ */
+public class UnknownExpressionFormatException extends RuntimeException
 {
 
-    Optional<JspTreeConverter> converterFor(JspTree jspTree);
+    public UnknownExpressionFormatException()
+    {
+    }
+
 }

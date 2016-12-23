@@ -6,10 +6,12 @@
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
 import java.util.Arrays;
+import static java.util.Arrays.asList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 import org.jdom2.Attribute;
+import org.jdom2.Namespace;
 
 /**
  *
@@ -17,19 +19,6 @@ import org.jdom2.Attribute;
  */
 public interface NewAttributeBuilder
 {
-
-    public static String stripELQuotes(String value)
-    {
-        if (!value.startsWith("${"))
-        {
-            return value;
-        }
-        if (value.equals("${}"))
-        {
-            return "";
-        }
-        return value.substring(2, value.length() - 1);
-    }
 
     List<Attribute> buildNewAttributes(Map<String, String> currentValues);
 
@@ -43,17 +32,42 @@ public interface NewAttributeBuilder
         }
     }
 
-    static String ucfirst(String in)
+    public static DefaultAttributeBuilder attributeNamed(String name, Namespace namespace)
     {
-        return Character.toUpperCase(in.charAt(0)) + in.substring(1);
+        return new DefaultAttributeBuilder(name, namespace);
     }
 
-    static String humanReadable(String input)
+    public static class DefaultAttributeBuilder implements NewAttributeBuilder
     {
-        return Arrays.asList(input.replaceAll("(^\\$\\{)|(\\}$)", "").split("\\."))
-                .stream()
-                .map(NewAttributeBuilder::ucfirst)
-                .collect(Collectors.joining());
+
+        private String name;
+        private Namespace namespace;
+        private Function<Map<String, String>, String> valueMaker;
+
+        public DefaultAttributeBuilder(String name, Namespace namespace)
+        {
+            this.name = name;
+            this.namespace = namespace;
+        }
+
+        public DefaultAttributeBuilder withValue(String valueKey)
+        {
+            valueMaker = (values) -> values.getOrDefault(valueKey, "");
+            return this;
+        }
+
+        public DefaultAttributeBuilder withValue(Function<Map<String, String>, String> valueMaker)
+        {
+            this.valueMaker = valueMaker;
+            return this;
+        }
+
+        @Override
+        public List<Attribute> buildNewAttributes(Map<String, String> currentValues)
+        {
+            return asList(new Attribute(name, valueMaker.apply(currentValues), namespace));
+        }
+
     }
 
 }

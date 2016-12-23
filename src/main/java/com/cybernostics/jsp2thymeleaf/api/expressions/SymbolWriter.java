@@ -15,6 +15,8 @@ import org.apache.commons.el.BinaryOperator;
 import org.apache.commons.el.UnaryOperator;
 
 /**
+ * This class translates the long form symbols into their more common
+ * equivalents TODO: Figure out which was used in the first place
  *
  * @author jason
  */

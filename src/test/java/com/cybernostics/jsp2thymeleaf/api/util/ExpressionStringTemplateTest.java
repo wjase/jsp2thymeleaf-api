@@ -46,19 +46,19 @@ public class ExpressionStringTemplateTest
     }
 
     /**
-     * Test of generate method, of class ExpressionStringTemplate.
+     * Test of generate method, of class SimpleStringTemplateProcessor.
      */
     @org.junit.Test
     public void testGenerate_String_Map()
     {
         System.out.println("generate");
-        String inputFormat = "${key2!stripEL}${key1}${key1!ucfirst}";
+        String inputFormat = "%{key2!stripEL}%{key1}%{key1!ucFirst}";
         Map<String, String> values = new HashMap<>();
         values.put("key1", "value1");
         values.put("key2", "${value2}");
 
         String expResult = "value2value1Value1";
-        String result = ExpressionStringTemplate.generate(inputFormat, values);
+        String result = SimpleStringTemplateProcessor.generate(inputFormat, values);
         assertThat(result, is(expResult));
     }
 

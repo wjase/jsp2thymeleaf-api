@@ -5,6 +5,9 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.util;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  *
  * @author jason
@@ -17,7 +20,7 @@ public class StringFunctions
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
-    static String stripEL(String s)
+    public static String stripEL(String s)
     {
         if (!s.startsWith("${"))
         {
@@ -28,5 +31,22 @@ public class StringFunctions
             return "";
         }
         return s.substring(2, s.length() - 1);
+    }
+
+    public static String addCommaPrefix(String item)
+    {
+        if (item.length() == 0)
+        {
+            return item;
+        }
+        return String.format(",%s", item);
+    }
+
+    public static String humanReadable(String input)
+    {
+        return Arrays.asList(input.replaceAll("(^\\$\\{)|(\\}$)", "").split("\\."))
+                .stream()
+                .map(StringFunctions::ucFirst)
+                .collect(Collectors.joining());
     }
 }

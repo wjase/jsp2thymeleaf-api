@@ -5,8 +5,10 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
+import static com.cybernostics.forks.jsp2x.JspParser.ELEMENT;
 import static com.cybernostics.forks.jsp2x.JspParser.EL_EXPR;
 import com.cybernostics.forks.jsp2x.JspTree;
+import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.XMLNS;
 import com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils;
 import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.nameOrNone;
 import java.util.ArrayList;
@@ -25,9 +27,8 @@ import org.jdom2.Namespace;
 public class CopyElementConverter implements JspTreeConverter
 {
 
-    private final Namespace xmlns = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
-
     protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
+    private AttributeValueElementConverter attributeElementConverter = new AttributeValueElementConverter();
 
     @Override
     public List<Content> processElement(JspTree jspTree, JspTreeConverterContext context)
@@ -37,7 +38,7 @@ public class CopyElementConverter implements JspTreeConverter
         if (maybeElement.isPresent())
         {
             Element element = maybeElement.get();
-            element.removeNamespaceDeclaration(xmlns);
+            element.removeNamespaceDeclaration(XMLNS);
             element.addContent(getChildContent(jspTree, context));
             addAttributes(element, jspTree);
             return Arrays.asList(element);
@@ -102,9 +103,12 @@ public class CopyElementConverter implements JspTreeConverter
         JspTree jspTreeAttributeValue = jspTreeAttribute.treeValue();
         String attributeText = jspTreeAttributeValue.toStringTree();
 
-        if (jspTreeAttributeValue.getType() == EL_EXPR)
+        switch (jspTreeAttributeValue.getType())
         {
-            attributeText = expressionConverter.convert("${" + attributeText + "}");
+            case ELEMENT:
+                return attributeElementConverter.transform(jspTreeAttribute);
+            case EL_EXPR:
+                return new Attribute(jspTreeAttribute.name(), expressionConverter.convert("${" + attributeText + "}"));
         }
 
         return new Attribute(jspTreeAttribute.name(), attributeText);
@@ -118,12 +122,12 @@ public class CopyElementConverter implements JspTreeConverter
 
     protected Namespace newNamespaceForElement(JspTree jspTree)
     {
-        return xmlns;
+        return XMLNS;
     }
 
     protected Namespace attributeNamespaceFor(JspTree eachAtt)
     {
-        return xmlns;
+        return XMLNS;
     }
 
 }
