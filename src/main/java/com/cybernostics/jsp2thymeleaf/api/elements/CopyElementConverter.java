@@ -100,22 +100,40 @@ public class CopyElementConverter implements JspTreeConverter
 
     protected Attribute createAttribute(JspTree jspTreeAttribute)
     {
-        JspTree jspTreeAttributeValue = jspTreeAttribute.treeValue();
-        String attributeText = jspTreeAttributeValue.toStringTree();
+        Optional<JspTree> jspTreeAttributeValueAssignment = Optional.ofNullable(jspTreeAttribute.treeValue());
 
-        switch (jspTreeAttributeValue.getType())
+        String attributeText = "";
+        if (jspTreeAttributeValueAssignment.isPresent())
         {
-            case ELEMENT:
-                return attributeElementConverter.transform(jspTreeAttribute);
-            case EL_EXPR:
-                return new Attribute(jspTreeAttribute.name(), expressionConverter.convert("${" + attributeText + "}"));
-        }
+            JspTree assignment = jspTreeAttributeValueAssignment.get();
+            if (assignment.getChildCount() == 0)
+            {
+                attributeText = "";
+            } else
+            {
+                JspTree jspAssignedValue = assignment.getChild(0);
 
+                attributeText = jspAssignedValue.getText();
+                switch (jspAssignedValue.getType())
+                {
+                    case ELEMENT:
+                        return attributeElementConverter.transform(jspAssignedValue);
+                    case EL_EXPR:
+                        attributeText = expressionConverter.convert("${" + jspAssignedValue.toStringTree() + "}");
+                }
+
+            }
+        } else
+        {
+            attributeText = jspTreeAttribute.name();
+        }
         return new Attribute(jspTreeAttribute.name(), attributeText);
+
     }
 
     @Override
-    public boolean canHandle(JspTree jspTree)
+    public boolean canHandle(JspTree jspTree
+    )
     {
         return true;
     }

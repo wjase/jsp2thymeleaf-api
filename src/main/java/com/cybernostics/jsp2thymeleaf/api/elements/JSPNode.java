@@ -5,18 +5,13 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import java.util.List;
-import org.jdom2.Attribute;
+import org.antlr.runtime.tree.Tree;
 
 /**
  *
  * @author jason
  */
-public interface JspTreeAttributeConverter
+public interface JSPNode extends Tree
 {
-
-    List<Attribute> getAttributes(JSPNode jspNode);
-
-    boolean canHandle(JSPNode jspNode);
 
 }

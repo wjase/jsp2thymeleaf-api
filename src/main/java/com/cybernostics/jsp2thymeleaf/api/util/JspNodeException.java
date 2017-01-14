@@ -11,7 +11,7 @@ import com.cybernostics.forks.jsp2x.JspTree;
  *
  * @author jason
  */
-public class JspNodeException extends RuntimeException
+public class JspNodeException extends RuntimeException implements HasLocationInStream
 {
 
     private JspTree jspTree;
@@ -22,13 +22,25 @@ public class JspNodeException extends RuntimeException
 
     public JspNodeException(String message, JspTree jspTree)
     {
-        super(message + String.format("( Line: %d, Column:%d )", jspTree.getLine(), jspTree.getCharPositionInLine()));
+        super(message);
+        this.jspTree = jspTree;
+    }
+
+    public JspNodeException(Throwable t, JspTree jspTree)
+    {
+        super(t);
         this.jspTree = jspTree;
     }
 
     public JspTree getJspTree()
     {
         return jspTree;
+    }
+
+    @Override
+    public StreamErrorLocation getLocation()
+    {
+        return new DefaultStreamErrorLocation(jspTree.getLine(), jspTree.getCharPositionInLine());
     }
 
 }
