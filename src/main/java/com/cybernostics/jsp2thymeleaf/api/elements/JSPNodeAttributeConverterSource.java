@@ -5,11 +5,11 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import com.cybernostics.forks.jsp2x.JspTree;
+import com.cybernostics.jsp.parser.JSPParser;
 import java.util.Optional;
 
-public interface JspTreeAttributeConverterSource
+public interface JSPNodeAttributeConverterSource
 {
 
-    Optional<AttributeValueElementConverter> attributeConverterFor(JspTree jspTree);
+    Optional<AttributeValueElementConverter> attributeConverterFor(JSPParser.HtmlAttributeContext JSPNode);
 }

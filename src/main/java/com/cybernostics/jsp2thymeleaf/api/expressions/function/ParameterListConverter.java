@@ -2,7 +2,7 @@
  * Parameter List converters may change order of Method Parameter lists
  * or otherwise slice/dice or combine them
  */
-package com.cybernostics.jsp2thymeleaf.api.expressions;
+package com.cybernostics.jsp2thymeleaf.api.expressions.function;
 
 import java.util.Arrays;
 import java.util.List;

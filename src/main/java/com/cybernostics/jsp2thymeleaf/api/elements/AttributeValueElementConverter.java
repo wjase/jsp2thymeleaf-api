@@ -5,11 +5,9 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import com.cybernostics.forks.jsp2x.JspTree;
-import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.getAttribute;
+import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
-import java.util.Optional;
 import org.jdom2.Attribute;
 
 /**
@@ -19,20 +17,32 @@ import org.jdom2.Attribute;
 public class AttributeValueElementConverter
 {
 
-    Attribute transform(JspTree jspTreeAttribute)
+    Attribute transform(JSPParser.HtmlAttributeContext attribute)
     {
-        String attName = jspTreeAttribute.name();
-        final JspTree treeValue = jspTreeAttribute.treeValue();
-        PrefixedName name = prefixedNameFor(treeValue.name());
-        if (name.getPrefix().equals("c"))
+        final JSPParser.JspElementContext jspElement = attribute.jspElement();
+        if (jspElement != null)
         {
-            if (name.getName().equals("url"))
-            {
-                Optional<JspTree> value = getAttribute(treeValue, "value");
-                return new Attribute(attName, "@{" + value.get().treeValue() + "}");
-            }
+            throw new UnsupportedOperationException("TODO");
         }
-        return new Attribute(attName, "Unknown tag:" + jspTreeAttribute.treeValue().toStringTree());
+        final JSPParser.ScriptletContext scriptlet = attribute.scriptlet();
+        if (scriptlet != null)
+        {
+            throw new UnsupportedOperationException("TODO");
+        }
+        final JSPParser.HtmlAttributeNameContext name = attribute.name;
+        final JSPParser.HtmlAttributeValueContext value = attribute.value;
+        String nameStr = name.getText();
+        PrefixedName prefixedName = prefixedNameFor(nameStr);
+//        if (prefixedName.getPrefix().equals("c"))
+//        {
+//            if (prefixedName.getName().equals("url"))
+//            {
+//                Optional<JSPAttributeNode> value = getAttribute(treeValue, "value");
+//
+//                return new Attribute(attName, "@{" + value.get().getValue() + "}");
+//            }
+//        }
+        return new Attribute(nameStr, "Unknown tag:" + ((value == null) ? "null" : value.toStringTree()));
 
     }
 

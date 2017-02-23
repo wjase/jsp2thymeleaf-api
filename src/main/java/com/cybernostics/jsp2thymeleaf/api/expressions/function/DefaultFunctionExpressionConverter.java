@@ -3,15 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api.expressions;
+package com.cybernostics.jsp2thymeleaf.api.expressions.function;
 
-import static com.cybernostics.jsp2thymeleaf.api.expressions.ParameterListConverter.noParamChange;
-import com.cybernostics.jsp2thymeleaf.api.util.OptionalListComma;
+import com.cybernostics.jsp2thymeleaf.api.expressions.HasWriter;
+import static com.cybernostics.jsp2thymeleaf.api.expressions.function.ParameterListConverter.noParamChange;
+import com.cybernostics.jsp2thymeleaf.api.expressions.DefaultExpressionVisitor;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.el.Expression;
 import org.apache.commons.el.FunctionInvocation;
 
@@ -19,9 +18,16 @@ import org.apache.commons.el.FunctionInvocation;
  *
  * @author jason
  */
-public class DefaultFunctionExpressionConverter implements ExpressionFunctionConverter
+public class DefaultFunctionExpressionConverter extends DefaultExpressionVisitor implements HasWriter
 {
 
+    private Writer writer;
+
+    @Override
+    public void setWriter(Writer writer)
+    {
+        this.writer = writer;
+    }
     private ParameterListConverter paramConverter;
 
     public static DefaultFunctionExpressionConverter convertsMethodCall(String name)
@@ -52,29 +58,38 @@ public class DefaultFunctionExpressionConverter implements ExpressionFunctionCon
     }
 
     @Override
-    public String applicableFor()
+    public List<Expression> getFunctionArgumentList(FunctionInvocation functionInvocation)
     {
-        return oldFunctionName;
+        return paramConverter.convertParams(super.getFunctionArgumentList(functionInvocation));
     }
 
     @Override
-    public void writeExpression(Writer writer, Expression expr, ExpressionConverterContext converter)
+    public void visitFunctionInvocationEnd(FunctionInvocation functionInvocation)
+    {
+        append(")");
+    }
+
+    @Override
+    public void visitFunctionInvocationStart(FunctionInvocation functionInvocation)
+    {
+        append(newFunctionName);
+        append("(");
+    }
+
+    private void append(String toAppend)
     {
         try
         {
-            FunctionInvocation functionInvocation = (FunctionInvocation) expr;
-            final List<Expression> paramsFor = paramConverter.convertParams(functionInvocation.getArgumentList());
-            writer.write(newFunctionName);
-            writer.write("(");
-            OptionalListComma.join(paramsFor, writer, ",", (w, ex) ->
-            {
-                converter.writeExpression(w, ex, converter);
-            });
-            writer.write(")");
+            writer.write(toAppend);
         } catch (IOException ex)
         {
-            Logger.getLogger(DefaultFunctionExpressionConverter.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);
         }
+    }
+
+    public String getConvertsMethodName()
+    {
+        return oldFunctionName;
     }
 
 }

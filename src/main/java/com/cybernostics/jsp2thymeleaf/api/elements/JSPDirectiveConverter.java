@@ -5,7 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import com.cybernostics.forks.jsp2x.JspTree;
+import com.cybernostics.jsp.parser.JSPParser;
 import java.util.List;
 import org.jdom2.Content;
 
@@ -13,8 +13,11 @@ import org.jdom2.Content;
  *
  * @author jason
  */
-public interface JspTreeConverterContext
+public interface JSPDirectiveConverter
 {
-    List<Content> contentFor(JspTree eachChild, JspTreeConverterContext context);
-    
+
+    List<Content> process(JSPParser.JspDirectiveContext jspTree, JSPElementNodeConverter context);
+
+    boolean canHandle(JSPParser.JspDirectiveContext jspTree);
+
 }

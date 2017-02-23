@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api.expressions;
+package com.cybernostics.jsp2thymeleaf.api.expressions.function;
 
+import com.cybernostics.jsp2thymeleaf.api.expressions.ExpressionVisitor;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ import org.apache.commons.el.Expression;
 public class FunctionConverterSource
 {
 
-    private Map<String, ExpressionConverterContext> converterMap = new HashMap<>();
+    private Map<String, ExpressionVisitor> converterMap = new HashMap<>();
     private String uri;
 
     public void setUri(String uri)
@@ -33,19 +34,19 @@ public class FunctionConverterSource
 
     }
 
-    public FunctionConverterSource(String forUri, ExpressionFunctionConverter... converters)
+    public FunctionConverterSource(String forUri, ExpressionVisitor... converters)
     {
         this.uri = forUri;
-        for (ExpressionFunctionConverter converter : converters)
+        for (ExpressionVisitor converter : converters)
         {
             add(converter);
         }
     }
 
-    public FunctionConverterSource(String forUri, List<ExpressionFunctionConverter> converters)
+    public FunctionConverterSource(String forUri, List<ExpressionVisitor> converters)
     {
         this.uri = forUri;
-        for (ExpressionFunctionConverter converter : converters)
+        for (ExpressionVisitor converter : converters)
         {
             add(converter);
         }
@@ -61,19 +62,19 @@ public class FunctionConverterSource
         return uri;
     }
 
-    public Optional<ExpressionConverterContext> converterFor(PrefixedName domTag)
+    public Optional<ExpressionVisitor> converterFor(PrefixedName domTag)
     {
         return Optional.ofNullable(converterMap.get(domTag.getName()));
     }
 
-    public Optional<ExpressionConverterContext> converterFor(Expression expression)
+    public Optional<ExpressionVisitor> converterFor(Expression expression)
     {
         PrefixedName domTag = prefixedNameFor(expression.getExpressionString());
         return converterFor(domTag);
     }
 
-    public void add(ExpressionFunctionConverter converter)
+    public void add(ExpressionVisitor converter)
     {
-        converterMap.put(converter.applicableFor(), converter);
+        converterMap.put(converter.getConvertsMethodName(), converter);
     }
 }

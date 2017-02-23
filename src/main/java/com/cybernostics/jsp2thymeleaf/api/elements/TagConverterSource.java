@@ -5,7 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import com.cybernostics.forks.jsp2x.JspTree;
+import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
 import java.util.HashMap;
@@ -16,10 +16,10 @@ import java.util.Optional;
  *
  * @author jason
  */
-public class TagConverterSource implements JspTreeConverterSource, JspTreeAttributeConverterSource
+public class TagConverterSource implements JSPNodeConverterSource, JSPNodeAttributeConverterSource
 {
 
-    private Map<String, JspTreeConverter> converterMap = new HashMap<>();
+    private Map<String, JSPElementNodeConverter> converterMap = new HashMap<>();
     private String uri;
 
     public TagConverterSource()
@@ -54,15 +54,15 @@ public class TagConverterSource implements JspTreeConverterSource, JspTreeAttrib
         return uri;
     }
 
-    public Optional<JspTreeConverter> converterFor(PrefixedName domTag)
+    public Optional<JSPElementNodeConverter> converterFor(PrefixedName domTag)
     {
         return Optional.ofNullable(converterMap.get(domTag.getName()));
     }
 
     @Override
-    public Optional<JspTreeConverter> converterFor(JspTree jspTree)
+    public Optional<JSPElementNodeConverter> converterFor(JSPParser.JspElementContext JSPNode)
     {
-        PrefixedName domTag = prefixedNameFor(jspTree.name());
+        PrefixedName domTag = prefixedNameFor(JSPNode.name.getText());
         return converterFor(domTag);
     }
 
@@ -72,7 +72,7 @@ public class TagConverterSource implements JspTreeConverterSource, JspTreeAttrib
     }
 
     @Override
-    public Optional<AttributeValueElementConverter> attributeConverterFor(JspTree jspTree)
+    public Optional<AttributeValueElementConverter> attributeConverterFor(JSPParser.HtmlAttributeContext JSPNode)
     {
         return Optional.empty();
     }

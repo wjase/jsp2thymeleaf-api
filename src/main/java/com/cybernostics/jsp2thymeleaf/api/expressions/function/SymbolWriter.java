@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api.expressions;
+package com.cybernostics.jsp2thymeleaf.api.expressions.function;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -45,28 +45,25 @@ public class SymbolWriter
 
     }
 
-    public static void write(Writer w, BinaryOperator operator)
+    public static void write(Writer w, String s)
     {
-        String op = operator.getOperatorSymbol();
         try
         {
-            w.write(symbolMap.getOrDefault(op, op));
+            w.write(symbolMap.getOrDefault(s, s));
         } catch (IOException ex)
         {
             Logger.getLogger(SymbolWriter.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    public static void write(Writer w, BinaryOperator operator)
+    {
+        write(w, operator.getOperatorSymbol());
+    }
+
     public static void write(Writer w, UnaryOperator operator)
     {
-        String op = operator.getOperatorSymbol();
-        try
-        {
-            w.write(symbolMap.getOrDefault(op, op));
-        } catch (IOException ex)
-        {
-            Logger.getLogger(SymbolWriter.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        write(w, operator.getOperatorSymbol());
     }
 
 }

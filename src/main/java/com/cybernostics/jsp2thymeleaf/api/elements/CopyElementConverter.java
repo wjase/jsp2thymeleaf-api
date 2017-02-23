@@ -5,16 +5,16 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import static com.cybernostics.forks.jsp2x.JspParser.ELEMENT;
-import static com.cybernostics.forks.jsp2x.JspParser.EL_EXPR;
-import com.cybernostics.forks.jsp2x.JspTree;
+import com.cybernostics.jsp.parser.JSPParser;
+import com.cybernostics.jsp.parser.JSPParser.HtmlAttributeContext;
+import com.cybernostics.jsp.parser.JSPParser.JspElementContext;
 import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.XMLNS;
-import com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils;
-import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.nameOrNone;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import static org.apache.commons.collections.ListUtils.EMPTY_LIST;
 import org.jdom2.Attribute;
 import org.jdom2.Content;
 import org.jdom2.Element;
@@ -24,128 +24,153 @@ import org.jdom2.Namespace;
  *
  * @author jason
  */
-public class CopyElementConverter implements JspTreeConverter
+public class CopyElementConverter implements JSPElementNodeConverter
 {
 
     protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
-    private AttributeValueElementConverter attributeElementConverter = new AttributeValueElementConverter();
+
+    private ScopedJSPConverters scopedConverters;
+
+    public void setScopedConverters(ScopedJSPConverters scopedConverters)
+    {
+        this.scopedConverters = scopedConverters;
+    }
 
     @Override
-    public List<Content> processElement(JspTree jspTree, JspTreeConverterContext context)
+    public List<Content> process(JSPParser.JspElementContext node, JSPElementNodeConverter context)
     {
-        ActiveNamespaces.add(newNamespaceForElement(jspTree));
-        Optional<Element> maybeElement = createElement(jspTree);
+        ActiveNamespaces.add(newNamespaceForElement(node));
+        Optional<Element> maybeElement = createElement(node, context);
         if (maybeElement.isPresent())
         {
             Element element = maybeElement.get();
             element.removeNamespaceDeclaration(XMLNS);
-            element.addContent(getChildContent(jspTree, context));
-            addAttributes(element, jspTree);
+            element.addContent(getNewChildContent(node, context));
+            addAttributes(element, node, context);
             return Arrays.asList(element);
         }
 
-        return getChildContent(jspTree, context);
+        return EMPTY_LIST;
     }
 
-    protected List<Content> getChildContent(JspTree jspTree, JspTreeConverterContext context)
+    protected List<Content> getNewChildContent(JSPParser.JspElementContext node, JSPElementNodeConverter context)
     {
-        List<Content> childContent = new ArrayList<>();
-        JspTreeUtils.doWithChildren(jspTree, (i, eachChild) ->
-        {
-            // child 0 is the name jspTree
-            // child 1 is the ATTRIBUTES jspTree
-            if (i > 1)
-            {
-                childContent.addAll(context.contentFor(eachChild, context));
-            }
-        });
-        return childContent;
+        return EMPTY_LIST;
     }
 
-    protected List<Attribute> getAttributes(JspTree jspTree)
+    protected List<Attribute> getAttributes(JspElementContext jspNode, JSPElementNodeConverter context)
     {
         List<Attribute> attributes = new ArrayList<>();
-        JspTreeUtils.doWithAttributes(jspTree, (i, eachAtt) -> attributes.add(createAttribute(eachAtt)));
+
+        doWithAttributes(jspNode, (i, eachAtt) -> attributes.add(createAttribute(eachAtt, context).get()));
         return attributes;
     }
 
-    protected void addAttributes(Element parent, JspTree jspTree)
+    protected void doWithAttributes(JspElementContext jspNode, BiConsumer<Integer, HtmlAttributeContext> toDo)
     {
-        getAttributes(jspTree).stream().forEach((entry) -> parent.setAttribute(entry));
+        final List<HtmlAttributeContext> atts = jspNode.atts;
+        for (int i = 0; i < atts.size(); i++)
+        {
+            toDo.accept(i, atts.get(i));
+        }
     }
 
-    protected String attributeNameFor(JspTree jspTree)
+    protected void addAttributes(Element parent, JspElementContext node, JSPElementNodeConverter context)
     {
-        return jspTree.name();
+        getAttributes(node, context).stream().forEach((entry) -> parent.setAttribute(entry));
     }
 
-    protected String valueFor(JspTree jspTree)
+    protected String attributeNameFor(JSPParser.JspElementContext node)
     {
-        return jspTree.treeValue().toStringTree();
+        return node.name.getText();
+    }
+
+    protected String valueFor(JSPParser.HtmlAttributeContext att)
+    {
+        return att.value.toStringTree();
 
     }
 
-    protected Optional<Element> createElement(JspTree jspTree)
+    protected Optional<Element> createElement(JspElementContext node, JSPElementNodeConverter context)
     {
-        final Element element = new Element(newNameForElement(jspTree));
+        final Element element = new Element(newNameForElement(node));
         element.removeNamespaceDeclaration(element.getNamespace());
-        element.setNamespace(newNamespaceForElement(jspTree));
+        element.setNamespace(newNamespaceForElement(node));
         return Optional.of(element);
     }
 
-    protected String newNameForElement(JspTree jspTree)
+    protected String newNameForElement(JSPParser.JspElementContext node)
     {
-        return nameOrNone(jspTree);
+        return nameOrNone(node);
     }
 
-    protected Attribute createAttribute(JspTree jspTreeAttribute)
+    protected Optional<Attribute> createAttribute(HtmlAttributeContext jspNodeAttribute, JSPElementNodeConverter context)
     {
-        Optional<JspTree> jspTreeAttributeValueAssignment = Optional.ofNullable(jspTreeAttribute.treeValue());
-
-        String attributeText = "";
-        if (jspTreeAttributeValueAssignment.isPresent())
+        final JSPParser.JspElementContext jspElement = jspNodeAttribute.jspElement();
+        if (jspElement != null)
         {
-            JspTree assignment = jspTreeAttributeValueAssignment.get();
-            if (assignment.getChildCount() == 0)
+            // do something here
+            throw new UnsupportedOperationException("element converter needed here.TODO");
+        }
+
+        final JSPParser.HtmlAttributeValueContext value = jspNodeAttribute.value;
+        String attributeValueText = "";
+
+        if (value != null)
+        {
+            final JSPParser.HtmlAttributeValueExprContext exprValue = jspNodeAttribute.value.htmlAttributeValueExpr();
+            if (exprValue != null)
             {
-                attributeText = "";
+                if (context == null)
+                {
+                    throw new RuntimeException("Cannot convert expression - null context:" + exprValue.getText());
+                }
+                attributeValueText = expressionConverter.convert(exprValue.getText(), context.getScopedConverters());
             } else
             {
-                JspTree jspAssignedValue = assignment.getChild(0);
-
-                attributeText = jspAssignedValue.getText();
-                switch (jspAssignedValue.getType())
+                final JSPParser.HtmlAttributeValueConstantContext constant = jspNodeAttribute.value.htmlAttributeValueConstant();
+                if (constant != null)
                 {
-                    case ELEMENT:
-                        return attributeElementConverter.transform(jspAssignedValue);
-                    case EL_EXPR:
-                        attributeText = expressionConverter.convert("${" + jspAssignedValue.toStringTree() + "}");
+                    attributeValueText = constant.getText();
                 }
 
             }
+
         } else
         {
-            attributeText = jspTreeAttribute.name();
+            attributeValueText = jspNodeAttribute.name.getText();
         }
-        return new Attribute(jspTreeAttribute.name(), attributeText);
+
+        return Optional.of(new Attribute(jspNodeAttribute.name.getText(), attributeValueText));
 
     }
 
     @Override
-    public boolean canHandle(JspTree jspTree
+    public boolean canHandle(JSPParser.JspElementContext jspNode
     )
     {
         return true;
     }
 
-    protected Namespace newNamespaceForElement(JspTree jspTree)
+    protected Namespace newNamespaceForElement(JSPParser.JspElementContext jspNode)
     {
         return XMLNS;
     }
 
-    protected Namespace attributeNamespaceFor(JspTree eachAtt)
+    protected Namespace attributeNamespaceFor(JSPParser.JspElementContext eachAtt)
     {
         return XMLNS;
+    }
+
+    @Override
+    public ScopedJSPConverters getScopedConverters()
+    {
+        return scopedConverters;
+    }
+
+    private String nameOrNone(JspElementContext node)
+    {
+        return node.name.getText();
     }
 
 }

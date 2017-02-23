@@ -3,14 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api.expressions;
+package com.cybernostics.jsp2thymeleaf.api.expressions.function;
 
 /**
  *
  * @author jason
  */
-public interface ExpressionFunctionConverter extends ExpressionConverterContext
+public interface ExpressionFunctionConverter
 {
 
-    public String applicableFor();
+    public String getConvertsMethodName();
+
 }

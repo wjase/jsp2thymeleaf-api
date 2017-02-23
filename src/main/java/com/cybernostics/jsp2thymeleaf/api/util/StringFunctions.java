@@ -49,4 +49,13 @@ public class StringFunctions
                 .map(StringFunctions::ucFirst)
                 .collect(Collectors.joining());
     }
+
+    public static String trimQuotes(String text)
+    {
+        if ((text.startsWith("\"") && text.endsWith("\"")) || (text.startsWith("\'") && text.endsWith("\'")))
+        {
+            return text.substring(1, text.length() - 1);
+        }
+        throw new RuntimeException("Trying to strip quotes on non quoted string:" + text);
+    }
 }

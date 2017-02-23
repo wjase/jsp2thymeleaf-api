@@ -64,18 +64,13 @@
                 <version>3.2.2</version>
                 <type>jar</type>
             </dependency>
-            <dependency>
-                <groupId>com.cybernostics.forks</groupId>
-                <artifactId>jsp2x</artifactId>
-                <version>1.0-SNAPSHOT</version>
-                <type>jar</type>
-            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>com.cybernostics.forks</groupId>
-            <artifactId>jsp2x</artifactId>
+            <groupId>com.cybernostics</groupId>
+            <artifactId>jsp-parser</artifactId>
+            <version>1.0.0-SNAPSHOT</version>        
         </dependency>
         <dependency>
             <groupId>org.jdom</groupId>

@@ -5,7 +5,8 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import com.cybernostics.forks.jsp2x.JspTree;
+import com.cybernostics.jsp.parser.JSPParser;
+import com.cybernostics.jsp.parser.JSPParser.JspElementContext;
 import static com.cybernostics.jsp2thymeleaf.api.util.SetUtils.setOf;
 import com.cybernostics.jsp2thymeleaf.api.util.SimpleStringTemplateProcessor;
 import java.util.ArrayList;
@@ -27,8 +28,6 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     public static final Namespace TH = Namespace.getNamespace("th", "http://www.thymeleaf.org");
     public static final Namespace CN = Namespace.getNamespace("cn", "http://www.cybernostics.com");
     public static final Namespace XMLNS = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
-
-    protected final ELExpressionConverter exprConverter = new ELExpressionConverter();
 
     protected String appliesTo;
     protected String convertedElementName;
@@ -78,19 +77,20 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     }
 
     @Override
-    protected List<Content> getChildContent(JspTree jspTree, JspTreeConverterContext context)
+    protected List<Content> getNewChildContent(JSPParser.JspElementContext node, JSPElementNodeConverter context)
     {
         if (newTextContent.length() == 0)
         {
-            return super.getChildContent(jspTree, context);
+            return super.getNewChildContent(node, context);
         }
-        return Arrays.asList(new Text(SimpleStringTemplateProcessor.generate(newTextContent, getAttributeMap(jspTree))));
+        Map<String, String> attMap = getAttributeMap(node, context);
+        return Arrays.asList(new Text(SimpleStringTemplateProcessor.generate(newTextContent, attMap)));
     }
 
     @Override
-    public boolean canHandle(JspTree jspTree)
+    public boolean canHandle(JSPParser.JspElementContext node)
     {
-        return jspTree.name().equals(getApplicableTag());
+        return node.name.getText().equals(getApplicableTag());
     }
 
     public JspTagElementConverter removesAtributes(String... names)
@@ -115,10 +115,10 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     }
 
     @Override
-    protected List<Attribute> getAttributes(JspTree jspTree)
+    protected List<Attribute> getAttributes(JspElementContext node, JSPElementNodeConverter context)
     {
         Map<String, String> attMap = new HashMap<>();
-        final List<Attribute> sourceAtributes = super.getAttributes(jspTree);
+        final List<Attribute> sourceAtributes = super.getAttributes(node, context);
         final List<Attribute> attributes = sourceAtributes
                 .stream()
                 .filter((eachAttribute) ->
@@ -140,13 +140,13 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     }
 
     @Override
-    protected Namespace newNamespaceForElement(JspTree jspTree)
+    protected Namespace newNamespaceForElement(JSPParser.JspElementContext node)
     {
         return newNamespace;
     }
 
     @Override
-    protected String newNameForElement(JspTree jspTree)
+    protected String newNameForElement(JSPParser.JspElementContext node)
     {
         return convertedElementName;
     }
@@ -157,9 +157,9 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
         return appliesTo;
     }
 
-    protected Map<String, String> getAttributeMap(JspTree jspTree)
+    protected Map<String, String> getAttributeMap(JspElementContext node, JSPElementNodeConverter context)
     {
-        return super.getAttributes(jspTree)
+        return super.getAttributes(node, context)
                 .stream()
                 .collect(Collectors.toMap((item) -> item.getName(), (item) -> item.getValue()));
 

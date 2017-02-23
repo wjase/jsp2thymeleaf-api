@@ -5,18 +5,11 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import java.util.List;
-import org.jdom2.Attribute;
+import com.cybernostics.jsp.parser.JSPParser;
+import java.util.Optional;
 
-/**
- *
- * @author jason
- */
-public interface JspTreeAttributeConverter
+public interface JSPNodeConverterSource
 {
 
-    List<Attribute> getAttributes(JSPNode jspNode);
-
-    boolean canHandle(JSPNode jspNode);
-
+    Optional<JSPElementNodeConverter> converterFor(JSPParser.JspElementContext JSPNode);
 }

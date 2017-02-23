@@ -3,17 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api.util;
+package com.cybernostics.jsp2thymeleaf.api.expressions;
+
+import java.io.Writer;
 
 /**
  *
  * @author jason
  */
-public interface StreamErrorLocation
+public interface HasWriter
 {
 
-    int getLine();
-
-    int getColumn();
+    void setWriter(Writer writer);
 
 }

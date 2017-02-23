@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.api.util;
+package com.cybernostics.jsp2thymeleaf.api.exception;
+
+import com.cybernostics.jsp2thymeleaf.api.exception.FileErrorLocation;
 
 /**
  *
