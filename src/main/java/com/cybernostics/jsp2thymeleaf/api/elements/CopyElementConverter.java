@@ -9,6 +9,7 @@ import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp.parser.JSPParser.HtmlAttributeContext;
 import com.cybernostics.jsp.parser.JSPParser.JspElementContext;
 import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.XMLNS;
+import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -154,6 +155,14 @@ public class CopyElementConverter implements JSPElementNodeConverter
 
     protected Namespace newNamespaceForElement(JSPParser.JspElementContext jspNode)
     {
+        final PrefixedName prefixedNameFor = PrefixedName.prefixedNameFor(jspNode.name.getText());
+        if (!prefixedNameFor.getPrefix().isEmpty())
+        {
+            final Namespace namespace = Namespace.getNamespace(prefixedNameFor.getPrefix(), "UNKNOWN_PREFIX_" + prefixedNameFor.getPrefix());
+            ActiveNamespaces.add(namespace);
+            return namespace;
+        }
+
         return XMLNS;
     }
 
@@ -170,7 +179,9 @@ public class CopyElementConverter implements JSPElementNodeConverter
 
     private String nameOrNone(JspElementContext node)
     {
-        return node.name.getText();
+        final PrefixedName prefixedNameFor = PrefixedName.prefixedNameFor(node.name.getText());
+
+        return prefixedNameFor.getName();
     }
 
 }

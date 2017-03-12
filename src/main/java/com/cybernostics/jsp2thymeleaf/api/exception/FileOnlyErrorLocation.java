@@ -9,27 +9,38 @@ package com.cybernostics.jsp2thymeleaf.api.exception;
  *
  * @author jason
  */
-public class DefaultFileErrorLocation extends DefaultStreamErrorLocation implements FileErrorLocation
+public class FileOnlyErrorLocation implements FileErrorLocation
 {
 
     private String filename;
 
-    public DefaultFileErrorLocation(String filename, int line, int column)
+    public FileOnlyErrorLocation(String filename)
     {
-        super(line, column);
         this.filename = filename;
     }
 
     @Override
     public String getFilename()
     {
-        return this.filename;
+        return filename;
+    }
+
+    @Override
+    public int getLine()
+    {
+        return 0;
+    }
+
+    @Override
+    public int getColumn()
+    {
+        return 0;
     }
 
     @Override
     public String toString()
     {
-        return String.format("%s (%d,%d)", filename, getLine(), getColumn());
+        return filename;
     }
 
 }

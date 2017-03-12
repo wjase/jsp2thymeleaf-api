@@ -6,16 +6,23 @@
 package com.cybernostics.jsp2thymeleaf.api.exception;
 
 import com.cybernostics.jsp.parser.JSPParser;
+import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  *
  * @author jason
  */
-public class JSPNodeException extends RuntimeException implements HasLocationInStream
+public class JSPNodeException extends JSP2ThymeLeafException implements MutableFileLocation
 {
 
     private ParserRuleContext jspNode;
+    private TokenisedFile file;
+
+    public TokenisedFile getFile()
+    {
+        return file;
+    }
 
     public ParserRuleContext getJspNode()
     {
@@ -25,6 +32,7 @@ public class JSPNodeException extends RuntimeException implements HasLocationInS
     public JSPNodeException(String message, Throwable cause)
     {
         super(message, cause);
+
     }
 
     public JSPNodeException(String message, JSPParser.JspDirectiveContext jspNode)
@@ -35,13 +43,25 @@ public class JSPNodeException extends RuntimeException implements HasLocationInS
 
     public JSPNodeException(String message, JSPParser.JspElementContext jspNode)
     {
+        super(message);
         this.jspNode = jspNode;
     }
 
-    @Override
-    public StreamErrorLocation getLocation()
+    public String getMessage()
     {
-        return new DefaultStreamErrorLocation(jspNode.start.getLine(), jspNode.start.getCharPositionInLine());
+        return super.getMessage() + " " + getLocation().toString();
+    }
+
+    @Override
+    public FileErrorLocation getLocation()
+    {
+        return new DefaultFileErrorLocation(file != null ? file.getRelativePathString() : "unknown", jspNode.start.getLine(), jspNode.start.getCharPositionInLine());
+    }
+
+    @Override
+    public void setFile(TokenisedFile file)
+    {
+        this.file = file;
     }
 
 }

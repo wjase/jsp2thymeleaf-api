@@ -36,4 +36,9 @@ public class ActiveNamespaces
     {
         return namespaces.values();
     }
+
+    public static void reset()
+    {
+        namespaces.clear();
+    }
 }
