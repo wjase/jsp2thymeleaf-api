@@ -25,7 +25,8 @@ import java.util.Optional;
 public class ScopedJSPConverters
 {
 
-    Optional<ScopedJSPConverters> parentScope = Optional.empty();
+    private Optional<ScopedJSPConverters> parentScope = Optional.empty();
+    private static JSPNodeConverterSource DEFAULT_CONVERTER_SOURCE = new DefaultElementConverterSource();
 
     public ScopedJSPConverters()
     {
@@ -34,7 +35,8 @@ public class ScopedJSPConverters
 
     public ScopedJSPConverters(ScopedJSPConverters parentScope)
     {
-        this.parentScope = Optional.of(parentScope);
+        this();
+        this.parentScope = Optional.ofNullable(parentScope);
     }
 
     private Map<String, JSPNodeConverterSource> activeTagConverters = new HashMap<>();
@@ -93,6 +95,11 @@ public class ScopedJSPConverters
             return parentScope.get().functionConverterForPrefix(prefix);
         }
         return Optional.ofNullable(source);
+    }
+
+    public static JSPNodeConverterSource defaultSource()
+    {
+        return DEFAULT_CONVERTER_SOURCE;
     }
 
 }

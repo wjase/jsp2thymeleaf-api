@@ -7,8 +7,6 @@ package com.cybernostics.jsp2thymeleaf.api.expressions;
 
 import java.io.StringReader;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.el.BinaryOperator;
 import org.apache.commons.el.BinaryOperatorExpression;
 import org.apache.commons.el.ComplexValue;
@@ -30,22 +28,17 @@ import org.apache.commons.lang3.tuple.Pair;
 public class ExpressionWalker
 {
 
-    public boolean walkExpressionString(String toWalk, ExpressionVisitor v)
+    public boolean walkExpressionString(String toWalk, ExpressionVisitor v) throws ParseException
     {
-        try
+        ELParser eLParser = new ELParser(new StringReader(toWalk));
+        final Object expr = eLParser.ExpressionString();
+        if (expr instanceof String)
         {
-            ELParser eLParser = new ELParser(new StringReader(toWalk));
-            final Object expr = eLParser.ExpressionString();
-            if (expr instanceof String)
-            {
-                v.visitString((String) expr);
-                return false;
-            }
-            walkExpression(expr, v);
-        } catch (ParseException ex)
-        {
-            Logger.getLogger(ExpressionWalker.class.getName()).log(Level.SEVERE, null, ex);
+            v.visitString((String) expr);
+            return false;
         }
+        walkExpression(expr, v);
+
         return true;
     }
 

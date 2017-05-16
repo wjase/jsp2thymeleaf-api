@@ -5,10 +5,13 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import org.apache.commons.lang3.StringUtils;
+import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -19,8 +22,8 @@ class ValueDefaultAndFilter
 
     private String name;
     private Optional<String> defaultValue;
-    private Optional<String> filterName;
-    private Function<String, String> filter;
+    private List<String> filterNames;
+    private List<Function<String, String>> filters;
 
     public String getName()
     {
@@ -32,14 +35,19 @@ class ValueDefaultAndFilter
         return defaultValue;
     }
 
-    public Optional<String> getFilterName()
+    public List<String> getFilterNames()
     {
-        return filterName;
+        return filterNames;
     }
 
     public String getFromMap(Map<String, String> source)
     {
-        return filter.apply(source.getOrDefault(name, defaultValue.orElseGet(() -> "")));
+        String currentValue = source.getOrDefault(name, defaultValue.orElseGet(() -> ""));
+        for (Function<String, String> filter : filters)
+        {
+            currentValue = filter.apply(currentValue);
+        }
+        return currentValue;
     }
 
     public static ValueDefaultAndFilter parse(String valueName)
@@ -47,13 +55,13 @@ class ValueDefaultAndFilter
         ValueDefaultAndFilter value = new ValueDefaultAndFilter();
         value.name = valueName;
         value.defaultValue = Optional.empty();
-        value.filterName = Optional.empty();
+        value.filterNames = new ArrayList();
         if (hasFilter(valueName))
         {
             String[] bits = valueName.split("!");
             value.name = bits[0];
-            value.filterName = Optional.of(bits.length > 1 ? bits[1] : "");
-            if (StringUtils.isBlank(value.filterName.get()))
+            value.filterNames = Arrays.asList((bits.length > 1 ? bits[1] : "").split(","));
+            if (value.filterNames.isEmpty())
             {
                 throw new IllegalArgumentException("missing filter name for variable " + valueName);
             }
@@ -64,7 +72,10 @@ class ValueDefaultAndFilter
             value.name = bits[0];
             value.defaultValue = Optional.of(bits.length > 1 ? bits[1] : "");
         }
-        value.filter = StringTransformers.get(value.filterName.orElseGet(() -> ""));
+        value.filters = value.filterNames
+                .stream()
+                .map(filtName -> StringTransformers.get(filtName))
+                .collect(toList());
         return value;
     }
 

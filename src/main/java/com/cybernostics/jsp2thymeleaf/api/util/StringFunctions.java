@@ -58,4 +58,9 @@ public class StringFunctions
         }
         throw new RuntimeException("Trying to strip quotes on non quoted string:" + text);
     }
+
+    public static String singleQuoted(String text)
+    {
+        return String.format("'%s'", text.replaceAll("'", "\\'"));
+    }
 }

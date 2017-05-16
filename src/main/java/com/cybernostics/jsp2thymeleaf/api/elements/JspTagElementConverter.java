@@ -7,6 +7,7 @@ package com.cybernostics.jsp2thymeleaf.api.elements;
 
 import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp.parser.JSPParser.JspElementContext;
+import static com.cybernostics.jsp2thymeleaf.api.elements.QuotedNodeConverter.forNode;
 import static com.cybernostics.jsp2thymeleaf.api.util.SetUtils.setOf;
 import com.cybernostics.jsp2thymeleaf.api.util.SimpleStringTemplateProcessor;
 import java.util.ArrayList;
@@ -14,7 +15,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.ListUtils;
 import org.jdom2.Attribute;
@@ -35,6 +38,7 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     protected Set<String> attributesToRemove = setOf();
     protected List<NewAttributeBuilder> newAttributeBuilders = new ArrayList<>();
     protected String newTextContent = "";
+    private Optional<Function<QuotedNodeConverter, String>> asAttributeConverter = Optional.empty();
 
     public JspTagElementConverter()
     {
@@ -61,6 +65,12 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     {
         convertedElementName = name;
         newNamespace = namespace;
+        return this;
+    }
+
+    public JspTagElementConverter whenQuoted(Function<QuotedNodeConverter, String> asAttributeConverter)
+    {
+        this.asAttributeConverter = Optional.of(asAttributeConverter);
         return this;
     }
 
@@ -108,9 +118,12 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     public JspTagElementConverter renamesAttribute(String oldName, String newName, Namespace namespace)
     {
         removesAtributes(oldName);
+
         addsAttributes((currentValues)
-                -> Arrays.asList(new Attribute(newName,
-                        currentValues.get(oldName), namespace)));
+                -> currentValues.containsKey(oldName)
+                ? Arrays.asList(new Attribute(newName,
+                        currentValues.get(oldName), namespace))
+                : ListUtils.EMPTY_LIST);
         return this;
     }
 
@@ -163,6 +176,14 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
                 .stream()
                 .collect(Collectors.toMap((item) -> item.getName(), (item) -> item.getValue()));
 
+    }
+
+    @Override
+    public String processAsAttributeValue(JSPParser.HtmlQuotedElementContext node, JSPElementNodeConverter context)
+    {
+        return asAttributeConverter
+                .orElseThrow(() -> new UnsupportedOperationException("Element conversion not supported in attribute value context:" + node.toString()))
+                .apply(forNode(node, context));
     }
 
 }

@@ -5,14 +5,23 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.exception;
 
+import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
+
 /**
  *
  * @author jason
  */
-public class JSP2ThymeLeafException extends RuntimeException implements HasErrorLocation
+public class JSP2ThymeLeafException extends RuntimeException implements MutableFileLocation, HasLocationInStream
 {
 
     private HasErrorLocation fileErrorLocation;
+    private TokenisedFile file;
+
+    @Override
+    public void setFile(TokenisedFile file)
+    {
+        this.file = file;
+    }
 
     public static class JSP2ThymeLeafExceptionBuilder
     {
@@ -49,17 +58,17 @@ public class JSP2ThymeLeafException extends RuntimeException implements HasError
         }
     }
 
-    public static JSP2ThymeLeafExceptionBuilder builder(String message, Throwable cause)
+    public static JSP2ThymeLeafExceptionBuilder jsp2ThymeLeafExceptionBuilder(String message, Throwable cause)
     {
         return new JSP2ThymeLeafExceptionBuilder(message, cause);
     }
 
-    public static JSP2ThymeLeafExceptionBuilder builder(String message)
+    public static JSP2ThymeLeafExceptionBuilder jsp2ThymeLeafExceptionBuilder(String message)
     {
         return new JSP2ThymeLeafExceptionBuilder(message);
     }
 
-    public static JSP2ThymeLeafExceptionBuilder builder(Throwable cause)
+    public static JSP2ThymeLeafExceptionBuilder jsp2ThymeLeafExceptionBuilder(Throwable cause)
     {
         return new JSP2ThymeLeafExceptionBuilder(cause);
     }

@@ -77,4 +77,11 @@ public class TagConverterSource implements JSPNodeConverterSource, JSPNodeAttrib
         return Optional.empty();
     }
 
+    @Override
+    public Optional<JSPElementNodeConverter> converterFor(JSPParser.HtmlQuotedElementContext jSPQuotedNode)
+    {
+        PrefixedName domTag = prefixedNameFor(jSPQuotedNode.name.getText());
+        return converterFor(domTag);
+    }
+
 }

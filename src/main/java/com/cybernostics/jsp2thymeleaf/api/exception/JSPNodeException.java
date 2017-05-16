@@ -29,9 +29,10 @@ public class JSPNodeException extends JSP2ThymeLeafException implements MutableF
         return jspNode;
     }
 
-    public JSPNodeException(String message, Throwable cause)
+    public JSPNodeException(String message, Throwable cause, ParserRuleContext jspNode)
     {
         super(message, cause);
+        this.jspNode = jspNode;
 
     }
 
@@ -55,13 +56,19 @@ public class JSPNodeException extends JSP2ThymeLeafException implements MutableF
     @Override
     public FileErrorLocation getLocation()
     {
-        return new DefaultFileErrorLocation(file != null ? file.getRelativePathString() : "unknown", jspNode.start.getLine(), jspNode.start.getCharPositionInLine());
+        return new DefaultFileErrorLocation(file != null ? file.getPath().toString() : "unknown", jspNode.start.getLine(), jspNode.start.getCharPositionInLine());
     }
 
     @Override
     public void setFile(TokenisedFile file)
     {
         this.file = file;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getMessage();
     }
 
 }

@@ -69,6 +69,10 @@ public class StringTransformers
 
     public static Function<String, String> get(String name)
     {
+        if (!functionMap.containsKey(name))
+        {
+            throw new IllegalArgumentException("Unknown string transformer:" + name);
+        }
         return functionMap.getOrDefault(name, identity);
     }
 }

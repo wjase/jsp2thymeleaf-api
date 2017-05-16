@@ -21,7 +21,7 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 /**
  * Sometimes you want to generate one out of a list of possible formats,
  * depending on the context variables available. ie if you have firstName and
- * lastName, then this. If you only have firstName then do this.
+ * lastName, then this. If you only have firstName then do that.
  *
  * @author jason
  */
@@ -34,6 +34,14 @@ public class AlternateFormatStrings
         return (values) ->
         {
             return afs.format(values);
+        };
+    }
+
+    public static Function<Map<String, String>, String> constant(String value)
+    {
+        return (values) ->
+        {
+            return value;
         };
     }
     private List<CandidateFormat> candidateFormats;

@@ -8,13 +8,16 @@ package com.cybernostics.jsp2thymeleaf.api.elements;
 import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp.parser.JSPParser.HtmlAttributeContext;
 import com.cybernostics.jsp.parser.JSPParser.JspElementContext;
+import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.TH;
 import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.XMLNS;
+import com.cybernostics.jsp2thymeleaf.api.exception.JSPNodeException;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.ListUtils.EMPTY_LIST;
 import org.jdom2.Attribute;
 import org.jdom2.Content;
@@ -31,6 +34,7 @@ public class CopyElementConverter implements JSPElementNodeConverter
     protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
 
     private ScopedJSPConverters scopedConverters;
+    private QuotedElementConverter quotedElementConverter = new QuotedElementConverter();
 
     public void setScopedConverters(ScopedJSPConverters scopedConverters)
     {
@@ -40,7 +44,6 @@ public class CopyElementConverter implements JSPElementNodeConverter
     @Override
     public List<Content> process(JSPParser.JspElementContext node, JSPElementNodeConverter context)
     {
-        ActiveNamespaces.add(newNamespaceForElement(node));
         Optional<Element> maybeElement = createElement(node, context);
         if (maybeElement.isPresent())
         {
@@ -78,7 +81,23 @@ public class CopyElementConverter implements JSPElementNodeConverter
 
     protected void addAttributes(Element parent, JspElementContext node, JSPElementNodeConverter context)
     {
-        getAttributes(node, context).stream().forEach((entry) -> parent.setAttribute(entry));
+        final List<Attribute> attributes = getAttributes(node, context);
+        List<Attribute> atts = attributes
+                .stream()
+                .map(a ->
+                {
+                    Namespace ns = a.getNamespace();
+                    if (ns.equals(XMLNS) || ns.getPrefix().equals(""))
+                    {
+                        if (a.getValue().startsWith("${") || a.getValue().startsWith("@{"))
+                        {
+                            a.setNamespace(TH);
+                        }
+                    }
+                    return a;
+                })
+                .collect(toList());
+        parent.setAttributes(atts);
     }
 
     protected String attributeNameFor(JSPParser.JspElementContext node)
@@ -89,7 +108,6 @@ public class CopyElementConverter implements JSPElementNodeConverter
     protected String valueFor(JSPParser.HtmlAttributeContext att)
     {
         return att.value.toStringTree();
-
     }
 
     protected Optional<Element> createElement(JspElementContext node, JSPElementNodeConverter context)
@@ -119,6 +137,18 @@ public class CopyElementConverter implements JSPElementNodeConverter
 
         if (value != null)
         {
+            final JSPParser.HtmlQuotedElementContext quotedElementContext = jspNodeAttribute.value.htmlQuotedElement();
+            if (quotedElementContext != null)
+            {
+                try
+                {
+                    attributeValueText = quotedElementConverter.convert(quotedElementContext, context);
+                } catch (Throwable t)
+                {
+                    throw new JSPNodeException("Cannot convert quoted element - " + t.getMessage() + "in element:" + quotedElementContext.getText(), t, quotedElementContext);
+                }
+            }
+
             final JSPParser.HtmlAttributeValueExprContext exprValue = jspNodeAttribute.value.htmlAttributeValueExpr();
             if (exprValue != null)
             {
@@ -126,7 +156,14 @@ public class CopyElementConverter implements JSPElementNodeConverter
                 {
                     throw new RuntimeException("Cannot convert expression - null context:" + exprValue.getText());
                 }
-                attributeValueText = expressionConverter.convert(exprValue.getText(), context.getScopedConverters());
+                try
+                {
+                    attributeValueText = ELExpressionConverter.convert(exprValue.getText(), context.getScopedConverters());
+                } catch (org.apache.commons.el.parser.ParseException exception)
+                {
+                    throw new JSP2ThymeleafExpressionParseException(exception, exprValue.start.getLine(), exprValue.start.getCharPositionInLine());
+                }
+
             } else
             {
                 final JSPParser.HtmlAttributeValueConstantContext constant = jspNodeAttribute.value.htmlAttributeValueConstant();
@@ -182,6 +219,12 @@ public class CopyElementConverter implements JSPElementNodeConverter
         final PrefixedName prefixedNameFor = PrefixedName.prefixedNameFor(node.name.getText());
 
         return prefixedNameFor.getName();
+    }
+
+    @Override
+    public String processAsAttributeValue(JSPParser.HtmlQuotedElementContext node, JSPElementNodeConverter context)
+    {
+        throw new UnsupportedOperationException("Element conversion not supported in attribute value context.");
     }
 
 }

@@ -12,4 +12,6 @@ public interface JSPNodeConverterSource
 {
 
     Optional<JSPElementNodeConverter> converterFor(JSPParser.JspElementContext JSPNode);
+
+    Optional<JSPElementNodeConverter> converterFor(JSPParser.HtmlQuotedElementContext JSPQuotedNode);
 }
