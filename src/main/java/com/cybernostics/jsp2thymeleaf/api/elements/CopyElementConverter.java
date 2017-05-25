@@ -137,7 +137,7 @@ public class CopyElementConverter implements JSPElementNodeConverter
 
         if (value != null)
         {
-            final JSPParser.HtmlQuotedElementContext quotedElementContext = jspNodeAttribute.value.htmlQuotedElement();
+            final JSPParser.JspQuotedElementContext quotedElementContext = jspNodeAttribute.value.jspQuotedElement();
             if (quotedElementContext != null)
             {
                 try
@@ -222,7 +222,7 @@ public class CopyElementConverter implements JSPElementNodeConverter
     }
 
     @Override
-    public String processAsAttributeValue(JSPParser.HtmlQuotedElementContext node, JSPElementNodeConverter context)
+    public String processAsAttributeValue(JSPParser.JspQuotedElementContext node, JSPElementNodeConverter context)
     {
         throw new UnsupportedOperationException("Element conversion not supported in attribute value context.");
     }

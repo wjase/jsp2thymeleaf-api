@@ -26,9 +26,9 @@ import org.apache.commons.lang3.text.StrLookup;
 class ValueResolverWithDefaultAndFilter extends StrLookup<String>
 {
 
-    private final Map<String, String> values;
+    private final Map<String, Object> values;
 
-    public ValueResolverWithDefaultAndFilter(Map<String, String> values)
+    public ValueResolverWithDefaultAndFilter(Map<String, Object> values)
     {
         this.values = values;
     }

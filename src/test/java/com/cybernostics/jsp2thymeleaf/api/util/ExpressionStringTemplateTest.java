@@ -13,6 +13,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -48,16 +49,31 @@ public class ExpressionStringTemplateTest
     /**
      * Test of generate method, of class SimpleStringTemplateProcessor.
      */
-    @org.junit.Test
+    @Test
     public void testGenerate_String_Map()
     {
-        System.out.println("generate");
         String inputFormat = "%{key2!stripEL}%{key1}%{key1!ucFirst}";
-        Map<String, String> values = new HashMap<>();
+        Map<String, Object> values = new HashMap<>();
         values.put("key1", "value1");
         values.put("key2", "${value2}");
 
         String expResult = "value2value1Value1";
+        String result = SimpleStringTemplateProcessor.generate(inputFormat, values);
+        assertThat(result, is(expResult));
+    }
+
+    @Test
+    public void testGenerateEmbeddedMap()
+    {
+
+        String inputFormat = "%{aMap!kvMap}";
+        Map<String, String> embeddedMap = new HashMap<>();
+        embeddedMap.put("item1", "\"value1\"");
+        embeddedMap.put("item2", "${value2}");
+        Map<String, Object> values = new HashMap<>();
+        values.put("aMap", embeddedMap);
+
+        String expResult = "item1=\"value1\",item2=${value2}";
         String result = SimpleStringTemplateProcessor.generate(inputFormat, values);
         assertThat(result, is(expResult));
     }

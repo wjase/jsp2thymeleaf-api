@@ -18,21 +18,21 @@ import java.util.function.Function;
 public class StringTransformers
 {
 
-    private static Map<String, Function<String, String>> functionMap = new TreeMap<>();
+    private static Map<Object, Function<Object, String>> functionMap = new TreeMap<>();
 
-    private static Function<String, String> identity = item -> item;
+    private static Function<Object, String> identity = item -> item.toString();
 
     static
     {
         add(StringFunctions.class);
     }
 
-    private static String[] args(String... args)
+    private static Object[] args(Object... args)
     {
         return args;
     }
 
-    private static Function<String, String> supplierFor(Method method)
+    private static Function<Object, String> supplierFor(Method method)
     {
         return (item) ->
         {
@@ -62,12 +62,12 @@ public class StringTransformers
                 .forEach(method -> add(method.getName(), supplierFor(method)));
     }
 
-    public static void add(String name, Function<String, String> fn)
+    public static void add(String name, Function<Object, String> fn)
     {
         functionMap.put(name, fn);
     }
 
-    public static Function<String, String> get(String name)
+    public static Function<Object, String> get(String name)
     {
         if (!functionMap.containsKey(name))
         {

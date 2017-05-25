@@ -16,8 +16,9 @@ import java.util.Optional;
 class QuotedElementConverter
 {
 
-    String convert(JSPParser.HtmlQuotedElementContext quotedElementContext, JSPElementNodeConverter converterContext)
+    String convert(JSPParser.JspQuotedElementContext quotedElementContext, JSPElementNodeConverter converterContext)
     {
+        System.out.println("Quoted context:[" + quotedElementContext.getText() + "]");
         final ScopedJSPConverters scopedConverters = converterContext.getScopedConverters();
         final PrefixedName prefixedName = PrefixedName.prefixedNameFor(quotedElementContext.name.getText());
         final Optional<JSPNodeConverterSource> converter = scopedConverters.forPrefix(prefixedName.getPrefix());

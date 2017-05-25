@@ -5,6 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.util;
 
+import static com.cybernostics.jsp2thymeleaf.api.util.KeyValueMapFormatter.expandMap;
 import java.util.Map;
 import org.apache.commons.lang3.text.StrLookup;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -16,6 +17,12 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 public class SimpleStringTemplateProcessor
 {
 
+    static
+    {
+        StringTransformers.add("kvMap", o -> expandMap(o));
+
+    }
+
     private final String format;
 
     public SimpleStringTemplateProcessor(String format)
@@ -23,12 +30,12 @@ public class SimpleStringTemplateProcessor
         this.format = format;
     }
 
-    public String generate(Map<String, String> values)
+    public String generate(Map<String, Object> values)
     {
         return getSubstitutor(values).replace(format);
     }
 
-    public static StrSubstitutor getSubstitutor(Map<String, String> values)
+    public static StrSubstitutor getSubstitutor(Map<String, Object> values)
     {
         return getSubstitutor(new ValueResolverWithDefaultAndFilter(values));
     }
@@ -42,7 +49,7 @@ public class SimpleStringTemplateProcessor
         return strSubstitutor;
     }
 
-    public static String generate(String inputFormat, Map<String, String> values)
+    public static String generate(String inputFormat, Map<String, Object> values)
     {
         return getSubstitutor(values).replace(inputFormat);
     }

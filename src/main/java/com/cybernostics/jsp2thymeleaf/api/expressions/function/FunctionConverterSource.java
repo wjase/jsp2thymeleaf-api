@@ -53,7 +53,7 @@ public class FunctionConverterSource
 
     private String format(String methodFormat, String method)
     {
-        Map<String, String> values = new TreeMap<>();
+        Map<String, Object> values = new TreeMap<>();
         values.put("method", method);
         return SimpleStringTemplateProcessor.generate(methodFormat, values);
     }

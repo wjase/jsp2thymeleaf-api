@@ -18,12 +18,12 @@ import org.apache.commons.el.parser.ParseException;
  *
  * @author jason
  */
-public class QuotedNodeConverter
+public class ScopedJspElementNodeContext
 {
 
-    public static QuotedNodeConverter forNode(JSPParser.HtmlQuotedElementContext elementContext, JSPElementNodeConverter converter)
+    public static ScopedJspElementNodeContext forJspNode(JSPParser.JspElementContext elementContext, JSPElementNodeConverter converter)
     {
-        return new QuotedNodeConverter(converter, elementContext);
+        return new ScopedJspElementNodeContext(converter, elementContext);
     }
 
     private JSPElementNodeConverter converter;
@@ -33,15 +33,15 @@ public class QuotedNodeConverter
         return converter;
     }
 
-    public JSPParser.HtmlQuotedElementContext getElementContext()
+    public JSPParser.JspElementContext getElementContext()
     {
         return elementContext;
     }
-    private JSPParser.HtmlQuotedElementContext elementContext;
+    private JSPParser.JspElementContext elementContext;
 
     private static Logger LOG = Logger.getLogger(QuotedElementUtils.class.getName());
 
-    private QuotedNodeConverter(JSPElementNodeConverter converter, JSPParser.HtmlQuotedElementContext elementContext)
+    private ScopedJspElementNodeContext(JSPElementNodeConverter converter, JSPParser.JspElementContext elementContext)
     {
         this.converter = converter;
         this.elementContext = elementContext;
@@ -65,7 +65,7 @@ public class QuotedNodeConverter
                 .findFirst();
     }
 
-    public void checkRequiredParams(String... attNames)
+    public void warnParamsNotInQuoted(String... attNames)
     {
         Arrays
                 .stream(attNames)
@@ -73,23 +73,19 @@ public class QuotedNodeConverter
                 .forEach(attName -> LOG.warning("attribute " + attName + "not converted in quoted element:" + elementContext.getText()));
     }
 
-    public Stream<QuotedNodeConverter> childElements()
+    public Stream<ScopedJspElementNodeContext> childElements()
     {
         return elementContext.children
                 .stream()
-                .filter(c -> c instanceof JSPParser.QuotedHtmlContentContext)
-                .flatMap(c -> ((JSPParser.QuotedHtmlContentContext) c).children.stream())
-                .filter(c -> c instanceof JSPParser.HtmlQuotedElementContext)
-                .map(c -> forNode((JSPParser.HtmlQuotedElementContext) c, converter));
+                .filter(c -> c instanceof JSPParser.HtmlContentContext)
+                .flatMap(c -> ((JSPParser.HtmlContentContext) c).children.stream())
+                .filter(c -> c instanceof JSPParser.JspElementContext)
+                .map(c -> forJspNode((JSPParser.JspElementContext) c, converter));
     }
 
     public Map<String, String> paramsBy(String key, String value)
     {
         return childElements()
-                .peek(n ->
-                {
-                    System.out.println(n.attAsName(key) + "=" + n.attAsValue(value));
-                })
                 .collect(toMap(n -> n.attAsName(key).orElse(""),
                         n -> n.attAsValue(value).orElse("")));
     }
@@ -112,7 +108,7 @@ public class QuotedNodeConverter
                 throw new RuntimeException(ex);
             }
         }
-        return elementNodeConverter.processAsAttributeValue(context.htmlQuotedElement(), elementNodeConverter);
+        return elementNodeConverter.processAsAttributeValue(context.jspQuotedElement(), elementNodeConverter);
     }
 
     private static String attributeIdentifier(JSPParser.HtmlAttributeValueContext context, JSPElementNodeConverter elementNodeConverter)
@@ -133,23 +129,17 @@ public class QuotedNodeConverter
                 throw new RuntimeException(ex);
             }
         }
-        return elementNodeConverter.processAsAttributeValue(context.htmlQuotedElement(), elementNodeConverter);
+        return elementNodeConverter.processAsAttributeValue(context.jspQuotedElement(), elementNodeConverter);
     }
 
-    public static Stream<JSPParser.HtmlQuotedElementContext> childElements(JSPParser.HtmlQuotedElementContext node)
+    public static Stream<JSPParser.JspElementContext> childElements(JSPParser.JspQuotedElementContext node)
     {
         return node.children
                 .stream()
-                .filter(c -> c instanceof JSPParser.QuotedHtmlContentContext)
-                .flatMap(c -> ((JSPParser.QuotedHtmlContentContext) c).children.stream())
-                .filter(c -> c instanceof JSPParser.HtmlQuotedElementContext)
-                .map(c -> (JSPParser.HtmlQuotedElementContext) c);
+                .filter(c -> c instanceof JSPParser.HtmlContentContext)
+                .flatMap(c -> ((JSPParser.HtmlContentContext) c).children.stream())
+                .filter(c -> c instanceof JSPParser.JspElementContext)
+                .map(c -> (JSPParser.JspElementContext) c);
     }
 
-//    public static Map<String, String> paramsFor(JSPParser.HtmlQuotedElementContext node){
-//        return node.children
-//                .stream()
-//                .map(i->i.getPayload())
-//                .collect(toMap((nd)->attributeValue(nd.g,"name","noname"),(nd)->attributeValue(nd, "value", "novalue")));
-//    }
 }

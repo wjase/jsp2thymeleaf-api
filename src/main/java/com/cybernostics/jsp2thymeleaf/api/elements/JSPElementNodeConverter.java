@@ -41,7 +41,7 @@ public interface JSPElementNodeConverter
      * @param node
      * @return a String value to insert as an attribute
      */
-    String processAsAttributeValue(JSPParser.HtmlQuotedElementContext node, JSPElementNodeConverter context);
+    String processAsAttributeValue(JSPParser.JspQuotedElementContext node, JSPElementNodeConverter context);
 
     boolean canHandle(JSPParser.JspElementContext node);
 

@@ -35,11 +35,11 @@ public class AlternateFormatStringsTest
     public void shouldSelectAppropriateFormatForAvailableValues()
     {
 
-        Map<String, String> valMap = new HashMap<>();
+        Map<String, Object> valMap = new HashMap<>();
         valMap.put("key1", "val1");
         valMap.put("key2", "val2");
         valMap.put("key3", "val3");
-        Function<Map<String, String>, String> result = AlternateFormatStrings.fromFormats(formats);
+        Function<Map<String, Object>, String> result = AlternateFormatStrings.fromFormats(formats);
         assertThat(result.apply(valMap), is("This other one needs val1,val2val3"));
         valMap.put("key4", "val4");
         result = AlternateFormatStrings.fromFormats(formats);

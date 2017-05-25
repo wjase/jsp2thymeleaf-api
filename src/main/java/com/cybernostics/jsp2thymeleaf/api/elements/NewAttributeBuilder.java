@@ -20,13 +20,13 @@ import org.jdom2.Namespace;
 public interface NewAttributeBuilder
 {
 
-    List<Attribute> buildNewAttributes(Map<String, String> currentValues);
+    List<Attribute> buildNewAttributes(Map<String, Object> currentValues);
 
     public static class NOPNewAttributeBuilder implements NewAttributeBuilder
     {
 
         @Override
-        public List<Attribute> buildNewAttributes(Map<String, String> currentValues)
+        public List<Attribute> buildNewAttributes(Map<String, Object> currentValues)
         {
             return Arrays.asList();
         }
@@ -42,7 +42,7 @@ public interface NewAttributeBuilder
 
         private String name;
         private Namespace namespace;
-        private Function<Map<String, String>, String> valueMaker;
+        private Function<Map<String, Object>, String> valueMaker;
 
         public DefaultAttributeBuilder(String name, Namespace namespace)
         {
@@ -52,18 +52,18 @@ public interface NewAttributeBuilder
 
         public DefaultAttributeBuilder withValue(String valueKey)
         {
-            valueMaker = (values) -> values.getOrDefault(valueKey, "");
+            valueMaker = (values) -> values.getOrDefault(valueKey, "").toString();
             return this;
         }
 
-        public DefaultAttributeBuilder withValue(Function<Map<String, String>, String> valueMaker)
+        public DefaultAttributeBuilder withValue(Function<Map<String, Object>, String> valueMaker)
         {
             this.valueMaker = valueMaker;
             return this;
         }
 
         @Override
-        public List<Attribute> buildNewAttributes(Map<String, String> currentValues)
+        public List<Attribute> buildNewAttributes(Map<String, Object> currentValues)
         {
             return asList(new Attribute(name, valueMaker.apply(currentValues), namespace));
         }

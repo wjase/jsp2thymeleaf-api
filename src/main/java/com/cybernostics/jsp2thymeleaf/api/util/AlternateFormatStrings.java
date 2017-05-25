@@ -28,7 +28,7 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 public class AlternateFormatStrings
 {
 
-    public static Function<Map<String, String>, String> fromFormats(String... formats)
+    public static Function<Map<String, Object>, String> fromFormats(String... formats)
     {
         final AlternateFormatStrings afs = new AlternateFormatStrings(formats);
         return (values) ->
@@ -37,7 +37,7 @@ public class AlternateFormatStrings
         };
     }
 
-    public static Function<Map<String, String>, String> constant(String value)
+    public static Function<Map<String, Object>, String> constant(String value)
     {
         return (values) ->
         {
@@ -54,7 +54,7 @@ public class AlternateFormatStrings
 
     }
 
-    public Optional<String> formatWhichUsesValues(Map<String, String> attributeMap)
+    public Optional<String> formatWhichUsesValues(Map<String, Object> attributeMap)
     {
         Set<String> availableValues = attributeMap.keySet();
         return candidateFormats.stream()
@@ -91,12 +91,12 @@ public class AlternateFormatStrings
         return requiredVariables;
     }
 
-    private String format(Map<String, String> values)
+    private String format(Map<String, Object> values)
     {
         return SimpleStringTemplateProcessor.generate(formatWhichUsesValues(values).orElseThrow(err(values)), values);
     }
 
-    Supplier<RuntimeException> err(Map<String, String> values)
+    Supplier<RuntimeException> err(Map<String, Object> values)
     {
         return () ->
         {

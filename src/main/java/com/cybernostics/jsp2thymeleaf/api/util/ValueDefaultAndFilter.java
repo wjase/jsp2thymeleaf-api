@@ -23,7 +23,7 @@ class ValueDefaultAndFilter
     private String name;
     private Optional<String> defaultValue;
     private List<String> filterNames;
-    private List<Function<String, String>> filters;
+    private List<Function<Object, String>> filters;
 
     public String getName()
     {
@@ -40,14 +40,14 @@ class ValueDefaultAndFilter
         return filterNames;
     }
 
-    public String getFromMap(Map<String, String> source)
+    public String getFromMap(Map<String, Object> source)
     {
-        String currentValue = source.getOrDefault(name, defaultValue.orElseGet(() -> ""));
-        for (Function<String, String> filter : filters)
+        Object currentValue = source.getOrDefault(name, defaultValue.orElseGet(() -> ""));
+        for (Function<Object, String> filter : filters)
         {
             currentValue = filter.apply(currentValue);
         }
-        return currentValue;
+        return currentValue.toString();
     }
 
     public static ValueDefaultAndFilter parse(String valueName)

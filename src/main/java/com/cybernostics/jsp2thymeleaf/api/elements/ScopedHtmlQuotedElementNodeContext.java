@@ -7,8 +7,10 @@ package com.cybernostics.jsp2thymeleaf.api.elements;
 
 import com.cybernostics.jsp.parser.JSPParser;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.toMap;
 import java.util.stream.Stream;
 import org.apache.commons.el.parser.ParseException;
 
@@ -16,35 +18,79 @@ import org.apache.commons.el.parser.ParseException;
  *
  * @author jason
  */
-public class QuotedElementUtils
+public class ScopedHtmlQuotedElementNodeContext
 {
+
+    public static ScopedHtmlQuotedElementNodeContext forNode(JSPParser.JspQuotedElementContext elementContext, JSPElementNodeConverter converter)
+    {
+        return new ScopedHtmlQuotedElementNodeContext(converter, elementContext);
+    }
+
+    private JSPElementNodeConverter converter;
+
+    public JSPElementNodeConverter getConverter()
+    {
+        return converter;
+    }
+
+    public JSPParser.JspQuotedElementContext getElementContext()
+    {
+        return elementContext;
+    }
+    private JSPParser.JspQuotedElementContext elementContext;
 
     private static Logger LOG = Logger.getLogger(QuotedElementUtils.class.getName());
 
-    private QuotedElementUtils()
+    private ScopedHtmlQuotedElementNodeContext(JSPElementNodeConverter converter, JSPParser.JspQuotedElementContext elementContext)
     {
-
+        this.converter = converter;
+        this.elementContext = elementContext;
     }
 
-    public static Optional<String> attributeValue(JSPParser.JspQuotedElementContext context, String name, JSPElementNodeConverter elementNodeConverter)
+    public Optional<String> attAsValue(String name)
     {
-        return context.atts
+        return elementContext.atts
                 .stream()
                 .filter(att -> name.equals(att.name.getText()))
-                .map(i -> attributeValue(i.value, elementNodeConverter))
+                .map(i -> attributeValue(i.value, converter))
                 .findFirst();
     }
 
-    public static Optional<String> attributeIdentifier(JSPParser.JspQuotedElementContext context, String name, JSPElementNodeConverter elementNodeConverter)
+    public Optional<String> attAsName(String name)
     {
-        return context.atts
+        return elementContext.atts
                 .stream()
                 .filter(att -> name.equals(att.name.getText()))
-                .map(i -> attributeIdentifier(i.value, elementNodeConverter))
+                .map(i -> attributeIdentifier(i.value, converter))
                 .findFirst();
     }
 
-    public static String attributeValue(JSPParser.HtmlAttributeValueContext context, JSPElementNodeConverter elementNodeConverter)
+    public void warnParamsNotInQuoted(String... attNames)
+    {
+        Arrays
+                .stream(attNames)
+                .filter(attName -> attAsName(attName).isPresent())
+                .forEach(attName -> LOG.warning("attribute " + attName + "not converted in quoted element:" + elementContext.getText()));
+    }
+
+    public Stream<ScopedHtmlQuotedElementNodeContext> childElements()
+    {
+        return elementContext.children
+                .stream()
+                .filter(c -> c instanceof JSPParser.QuotedHtmlContentContext)
+                .flatMap(c -> ((JSPParser.QuotedHtmlContentContext) c).children.stream())
+                .filter(c -> c instanceof JSPParser.JspQuotedElementContext)
+                .map(c -> forNode((JSPParser.JspQuotedElementContext) c, converter));
+    }
+
+    public Map<String, String> paramsBy(String key, String value)
+    {
+        return childElements()
+                .collect(toMap(n -> n.attAsName(key).orElse(""),
+                        n -> n.attAsValue(value).orElse("")));
+    }
+
+    private static String attributeValue(JSPParser.HtmlAttributeValueContext context, JSPElementNodeConverter elementNodeConverter)
     {
         final JSPParser.HtmlAttributeValueConstantContext asConstant = context.htmlAttributeValueConstant();
         if (asConstant != null)
@@ -65,7 +111,7 @@ public class QuotedElementUtils
         return elementNodeConverter.processAsAttributeValue(context.jspQuotedElement(), elementNodeConverter);
     }
 
-    public static String attributeIdentifier(JSPParser.HtmlAttributeValueContext context, JSPElementNodeConverter elementNodeConverter)
+    private static String attributeIdentifier(JSPParser.HtmlAttributeValueContext context, JSPElementNodeConverter elementNodeConverter)
     {
         final JSPParser.HtmlAttributeValueConstantContext asConstant = context.htmlAttributeValueConstant();
         if (asConstant != null)
@@ -86,14 +132,6 @@ public class QuotedElementUtils
         return elementNodeConverter.processAsAttributeValue(context.jspQuotedElement(), elementNodeConverter);
     }
 
-    public static void warnNotFullyConvertedIf(JSPParser.JspQuotedElementContext node, String... attNames)
-    {
-        Arrays
-                .stream(attNames)
-                .filter(attName -> attributeValue(node, attName, null).isPresent())
-                .forEach(attName -> LOG.warning("attribute " + attName + "not converted in quoted element:" + node.getText()));
-    }
-
     public static Stream<JSPParser.JspQuotedElementContext> childElements(JSPParser.JspQuotedElementContext node)
     {
         return node.children
@@ -104,10 +142,4 @@ public class QuotedElementUtils
                 .map(c -> (JSPParser.JspQuotedElementContext) c);
     }
 
-//    public static Map<String, String> paramsFor(JSPParser.JspQuotedElementContext node){
-//        return node.children
-//                .stream()
-//                .map(i->i.getPayload())
-//                .collect(toMap((nd)->attributeValue(nd.g,"name","noname"),(nd)->attributeValue(nd, "value", "novalue")));
-//    }
 }
