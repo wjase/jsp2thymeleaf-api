@@ -10,7 +10,6 @@ import com.cybernostics.jsp.parser.JSPParser.HtmlAttributeContext;
 import com.cybernostics.jsp.parser.JSPParser.JspElementContext;
 import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.TH;
 import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.XMLNS;
-import com.cybernostics.jsp2thymeleaf.api.exception.JSPNodeException;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +33,6 @@ public class CopyElementConverter implements JSPElementNodeConverter
     protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
 
     private ScopedJSPConverters scopedConverters;
-    private QuotedElementConverter quotedElementConverter = new QuotedElementConverter();
 
     public void setScopedConverters(ScopedJSPConverters scopedConverters)
     {
@@ -97,7 +95,7 @@ public class CopyElementConverter implements JSPElementNodeConverter
                     return a;
                 })
                 .collect(toList());
-        parent.setAttributes(atts);
+        atts.forEach(it -> parent.setAttribute(it));
     }
 
     protected String attributeNameFor(JSPParser.JspElementContext node)
@@ -137,17 +135,6 @@ public class CopyElementConverter implements JSPElementNodeConverter
 
         if (value != null)
         {
-            final JSPParser.JspQuotedElementContext quotedElementContext = jspNodeAttribute.value.jspQuotedElement();
-            if (quotedElementContext != null)
-            {
-                try
-                {
-                    attributeValueText = quotedElementConverter.convert(quotedElementContext, context);
-                } catch (Throwable t)
-                {
-                    throw new JSPNodeException("Cannot convert quoted element - " + t.getMessage() + "in element:" + quotedElementContext.getText(), t, quotedElementContext);
-                }
-            }
 
             final JSPParser.HtmlAttributeValueExprContext exprValue = jspNodeAttribute.value.htmlAttributeValueExpr();
             if (exprValue != null)
@@ -220,11 +207,4 @@ public class CopyElementConverter implements JSPElementNodeConverter
 
         return prefixedNameFor.getName();
     }
-
-    @Override
-    public String processAsAttributeValue(JSPParser.JspQuotedElementContext node, JSPElementNodeConverter context)
-    {
-        throw new UnsupportedOperationException("Element conversion not supported in attribute value context.");
-    }
-
 }

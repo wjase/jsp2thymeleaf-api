@@ -6,10 +6,8 @@
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
 import com.cybernostics.jsp.parser.JSPParser;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 import static java.util.stream.Collectors.toMap;
 import java.util.stream.Stream;
 import org.apache.commons.el.parser.ParseException;
@@ -39,8 +37,6 @@ public class ScopedJspElementNodeContext
     }
     private JSPParser.JspElementContext elementContext;
 
-    private static Logger LOG = Logger.getLogger(QuotedElementUtils.class.getName());
-
     private ScopedJspElementNodeContext(JSPElementNodeConverter converter, JSPParser.JspElementContext elementContext)
     {
         this.converter = converter;
@@ -63,14 +59,6 @@ public class ScopedJspElementNodeContext
                 .filter(att -> name.equals(att.name.getText()))
                 .map(i -> attributeIdentifier(i.value, converter))
                 .findFirst();
-    }
-
-    public void warnParamsNotInQuoted(String... attNames)
-    {
-        Arrays
-                .stream(attNames)
-                .filter(attName -> attAsName(attName).isPresent())
-                .forEach(attName -> LOG.warning("attribute " + attName + "not converted in quoted element:" + elementContext.getText()));
     }
 
     public Stream<ScopedJspElementNodeContext> childElements()
@@ -108,7 +96,7 @@ public class ScopedJspElementNodeContext
                 throw new RuntimeException(ex);
             }
         }
-        return elementNodeConverter.processAsAttributeValue(context.jspQuotedElement(), elementNodeConverter);
+        return "unknown expression type";//elementNodeConverter.processAsAttributeValue(context.jspQuotedElement(), elementNodeConverter);
     }
 
     private static String attributeIdentifier(JSPParser.HtmlAttributeValueContext context, JSPElementNodeConverter elementNodeConverter)
@@ -129,17 +117,7 @@ public class ScopedJspElementNodeContext
                 throw new RuntimeException(ex);
             }
         }
-        return elementNodeConverter.processAsAttributeValue(context.jspQuotedElement(), elementNodeConverter);
-    }
-
-    public static Stream<JSPParser.JspElementContext> childElements(JSPParser.JspQuotedElementContext node)
-    {
-        return node.children
-                .stream()
-                .filter(c -> c instanceof JSPParser.HtmlContentContext)
-                .flatMap(c -> ((JSPParser.HtmlContentContext) c).children.stream())
-                .filter(c -> c instanceof JSPParser.JspElementContext)
-                .map(c -> (JSPParser.JspElementContext) c);
+        return "unknown expression type";//elementNodeConverter.processAsAttributeValue(context.jspElement(), elementNodeConverter);
     }
 
 }

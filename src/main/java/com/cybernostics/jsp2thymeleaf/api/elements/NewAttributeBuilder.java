@@ -5,6 +5,8 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
+import com.cybernostics.jsp2thymeleaf.api.common.Namespaces;
+import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.TH;
 import java.util.Arrays;
 import static java.util.Arrays.asList;
 import java.util.List;
@@ -32,22 +34,33 @@ public interface NewAttributeBuilder
         }
     }
 
-    public static DefaultAttributeBuilder attributeNamed(String name, Namespace namespace)
+    public static DefaultAttributeBuilder named(String name, Namespace namespace)
     {
         return new DefaultAttributeBuilder(name, namespace);
+    }
+
+    public static DefaultAttributeBuilder namedTH(String name)
+    {
+        return new DefaultAttributeBuilder(name, TH);
     }
 
     public static class DefaultAttributeBuilder implements NewAttributeBuilder
     {
 
         private String name;
-        private Namespace namespace;
+        private Namespace namespace = Namespaces.XMLNS;
         private Function<Map<String, Object>, String> valueMaker;
 
         public DefaultAttributeBuilder(String name, Namespace namespace)
         {
             this.name = name;
             this.namespace = namespace;
+        }
+
+        public DefaultAttributeBuilder withNamespace(Namespace namespace)
+        {
+            this.namespace = namespace;
+            return this;
         }
 
         public DefaultAttributeBuilder withValue(String valueKey)

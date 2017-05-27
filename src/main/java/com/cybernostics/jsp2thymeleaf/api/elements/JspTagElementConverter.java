@@ -5,14 +5,12 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.elements;
 
-import com.cybernostics.jsp.parser.JSPLexer;
 import com.cybernostics.jsp.parser.JSPParser;
+import com.cybernostics.jsp.parser.JSPParser.HtmlAttributeValueContext;
 import com.cybernostics.jsp.parser.JSPParser.JspElementContext;
-import static com.cybernostics.jsp2thymeleaf.api.elements.ScopedHtmlQuotedElementNodeContext.forNode;
 import static com.cybernostics.jsp2thymeleaf.api.elements.ScopedJspElementNodeContext.forJspNode;
 import static com.cybernostics.jsp2thymeleaf.api.util.SetUtils.setOf;
 import com.cybernostics.jsp2thymeleaf.api.util.SimpleStringTemplateProcessor;
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.commons.collections.ListUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Content;
@@ -43,8 +40,8 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     protected Set<String> attributesToRemove = setOf();
     protected List<NewAttributeBuilder> newAttributeBuilders = new ArrayList<>();
     protected String newTextContent = "";
-    private Optional<Function<ScopedHtmlQuotedElementNodeContext, String>> asAttributeConverter = Optional.empty();
     private Optional<Function<ScopedJspElementNodeContext, Map<String, String>>> childAttributeSource = Optional.empty();
+    private Optional<String> attributeToUseWhenQuoted = Optional.empty();
 
     public JspTagElementConverter()
     {
@@ -94,9 +91,9 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
         return this;
     }
 
-    public JspTagElementConverter whenQuoted(Function<ScopedHtmlQuotedElementNodeContext, String> asAttributeConverter)
+    public JspTagElementConverter whenQuotedInAttributeReplaceWith(String attToUse)
     {
-        this.asAttributeConverter = Optional.of(asAttributeConverter);
+        this.attributeToUseWhenQuoted = Optional.of(attToUse);
         return this;
     }
 
@@ -185,7 +182,24 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
             ActiveNamespaces.add(createdAttribute.getNamespace());
         }
 
-        return ListUtils.union(createdAttributes, attributes);
+        final List<Attribute> allAttributes = ListUtils.union(createdAttributes, attributes);
+        if (isElementEmbeddedInAttribute(node))
+        {
+            if (this.attributeToUseWhenQuoted.isPresent())
+            {
+                String attributeToUse = attributeToUseWhenQuoted.get();
+                allAttributes.stream()
+                        .filter(it -> it.getName().equals(attributeToUse))
+                        .forEach(it -> it.setName("data-replace-parent-attribute-value"));
+            }
+
+        }
+        return allAttributes;
+    }
+
+    private static boolean isElementEmbeddedInAttribute(JspElementContext node)
+    {
+        return node.parent instanceof JSPParser.HtmlAttributeValueContext;
     }
 
     @Override
@@ -215,29 +229,28 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     }
 
     @Override
-    public String processAsAttributeValue(JSPParser.JspQuotedElementContext node, JSPElementNodeConverter context)
+    protected Optional<Element> createElement(JspElementContext node, JSPElementNodeConverter context)
     {
-        try
+        Optional<Element> element = super.createElement(node, context);
+        if (element.isPresent())
         {
-            String elementText = node.getText();
-            JSPLexer jspLexer = new JSPLexer(new org.antlr.v4.runtime.ANTLRInputStream(new ByteArrayInputStream(elementText.getBytes())));
-            CommonTokenStream tokens = new CommonTokenStream(jspLexer);
-            // Pass the tokens to the parser
-            JSPParser parser = new JSPParser(tokens);
-            JSPParser.JspDocumentContext documentContext = parser.jspDocument();
-            JspElementContext jspElement = (JspElementContext) documentContext.children.get(1).getChild(0);
-            List<Content> content = process(jspElement, context);
-            System.out.println("Quoted content converted to:");
-            System.out.println(content.stream().map(o -> o.toString()).collect(Collectors.joining()));
-        } catch (Throwable t)
-        {
-            System.out.println("badbadbad");
-            t.printStackTrace();
-        }
+            if (isElementEmbeddedInAttribute(node))
+            {
 
-        return asAttributeConverter
-                .orElseThrow(() -> new UnsupportedOperationException("Element conversion not supported in attribute value context:" + node.toString()))
-                .apply(forNode(node, context));
+                HtmlAttributeValueContext parent = (HtmlAttributeValueContext) node.parent;
+                String parentAttributeToReplace = getAttibuteNamefor(parent);
+                Element el = element.get();
+                el.setAttribute("data-replace-parent-attribute-name", parentAttributeToReplace);
+                el.setName("deleteme");
+
+            }
+        }
+        return element;
+    }
+
+    private String getAttibuteNamefor(HtmlAttributeValueContext parent)
+    {
+        return parent.getParent().children.get(0).getText();
     }
 
 }

@@ -29,20 +29,6 @@ public interface JSPElementNodeConverter
      */
     List<Content> process(JSPParser.JspElementContext node, JSPElementNodeConverter context);
 
-    /**
-     * Convert this element into a new attribute value.
-     *
-     * An example is the <c:url> element which gets transformed as follows:
-     *
-     * <a href="<c:url value="some/path"/>">A Link</a>
-     *
-     * <a href="@{some/path}">A Link</a>
-     *
-     * @param node
-     * @return a String value to insert as an attribute
-     */
-    String processAsAttributeValue(JSPParser.JspQuotedElementContext node, JSPElementNodeConverter context);
-
     boolean canHandle(JSPParser.JspElementContext node);
 
     ScopedJSPConverters getScopedConverters();
