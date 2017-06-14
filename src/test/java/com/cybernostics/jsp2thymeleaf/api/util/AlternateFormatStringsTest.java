@@ -24,12 +24,12 @@ public class AlternateFormatStringsTest
 
     String[] formats =
     {
-        "This one needs %{key1}%{key4!addCommaPrefix}%{key2}",
+        "This one needs %{key1}%{key4!addCommaPrefix}%{key2}_<_some text %{key5}_>_",
         "This other one needs %{key1}%{key2!addCommaPrefix}%{key3}"
     };
 
     /**
-     * Test of fromFormats method, of class AlternateFormatStrings.
+     * Test of chooseFormat method, of class AlternateFormatStrings.
      */
     @Test
     public void shouldSelectAppropriateFormatForAvailableValues()
@@ -39,11 +39,12 @@ public class AlternateFormatStringsTest
         valMap.put("key1", "val1");
         valMap.put("key2", "val2");
         valMap.put("key3", "val3");
-        Function<Map<String, Object>, String> result = AlternateFormatStrings.fromFormats(formats);
+        Function<Map<String, Object>, String> result = AlternateFormatStrings.chooseFormat(formats);
         assertThat(result.apply(valMap), is("This other one needs val1,val2val3"));
         valMap.put("key4", "val4");
-        result = AlternateFormatStrings.fromFormats(formats);
         assertThat(result.apply(valMap), is("This one needs val1,val4val2"));
+        valMap.put("key5", "val5");
+        assertThat(result.apply(valMap), is("This one needs val1,val4val2some text val5"));
     }
 
 }

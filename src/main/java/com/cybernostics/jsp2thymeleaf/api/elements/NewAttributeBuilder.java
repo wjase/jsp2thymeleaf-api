@@ -48,7 +48,7 @@ public interface NewAttributeBuilder
     {
 
         private String name;
-        private Namespace namespace = Namespaces.XMLNS;
+        private Namespace namespace = Namespaces.NONS;
         private Function<Map<String, Object>, String> valueMaker;
 
         public DefaultAttributeBuilder(String name, Namespace namespace)
