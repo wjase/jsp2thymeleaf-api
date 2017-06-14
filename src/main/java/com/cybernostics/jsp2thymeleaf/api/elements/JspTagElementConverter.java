@@ -13,6 +13,7 @@ import static com.cybernostics.jsp2thymeleaf.api.util.SetUtils.setOf;
 import com.cybernostics.jsp2thymeleaf.api.util.SimpleStringTemplateProcessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import static java.util.Arrays.asList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 import org.apache.commons.collections.ListUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Content;
@@ -27,15 +29,16 @@ import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.Text;
 
-public class JspTagElementConverter extends CopyElementConverter implements TagConverter
+public class JspTagElementConverter extends CopyElementConverter implements TagConverter, MultipleTagConverter
 {
 
     public static final Namespace TH = Namespace.getNamespace("th", "http://www.thymeleaf.org");
     public static final Namespace CN = Namespace.getNamespace("cn", "http://www.cybernostics.com");
     public static final Namespace XMLNS = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
 
-    protected String appliesTo;
-    protected String convertedElementName;
+    protected String convertsTag;
+    protected String[] alsoConvertsTags;
+    protected String newElementName;
     private Namespace newNamespace = TH;
     protected Set<String> attributesToRemove = setOf();
     protected List<NewAttributeBuilder> newAttributeBuilders = new ArrayList<>();
@@ -47,15 +50,10 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     {
     }
 
-    public JspTagElementConverter(String appliesTo)
+    public JspTagElementConverter(String appliesTo, String... alsoAppliesTo)
     {
-        this(appliesTo, "");
-    }
-
-    public JspTagElementConverter(String appliesTo, String convertedElementName)
-    {
-        this.appliesTo = appliesTo;
-        this.convertedElementName = convertedElementName;
+        this.convertsTag = appliesTo;
+        this.alsoConvertsTags = alsoAppliesTo != null ? alsoAppliesTo : new String[0];
     }
 
     public static JspTagElementConverter ignore(String tagName)
@@ -72,15 +70,15 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
         };
     }
 
-    public static JspTagElementConverter converterFor(String tagName)
+    public static JspTagElementConverter converterFor(String tagName, String... alsoConverts)
     {
 
-        return new JspTagElementConverter(tagName);
+        return new JspTagElementConverter(tagName, alsoConverts);
     }
 
     public JspTagElementConverter withNewName(String name, Namespace namespace)
     {
-        convertedElementName = name;
+        newElementName = name;
         newNamespace = namespace;
         return this;
     }
@@ -99,7 +97,7 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
 
     public JspTagElementConverter withNewName(String name)
     {
-        convertedElementName = name;
+        newElementName = name;
         return this;
     }
 
@@ -132,9 +130,9 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
         return this;
     }
 
-    public JspTagElementConverter addsAttributes(NewAttributeBuilder... attributeBuilder)
+    public JspTagElementConverter addsAttributes(NewAttributeBuilder... attributeBuilders)
     {
-        newAttributeBuilders.addAll(Arrays.asList(attributeBuilder));
+        newAttributeBuilders.addAll(Arrays.asList(attributeBuilders));
         return this;
     }
 
@@ -172,6 +170,8 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
         {
             attMap.put("_childAtts", childMap);
         }
+
+        attMap.put("__tagname__", convertsTag);
 
         final List<Attribute> createdAttributes = newAttributeBuilders.stream()
                 .flatMap(eachBuilder -> eachBuilder.buildNewAttributes(attMap).stream())
@@ -211,13 +211,13 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     @Override
     protected String newNameForElement(JSPParser.JspElementContext node)
     {
-        return convertedElementName;
+        return newElementName;
     }
 
     @Override
     public String getApplicableTag()
     {
-        return appliesTo;
+        return convertsTag;
     }
 
     protected Map<String, Object> getAttributeMap(JspElementContext node, JSPElementNodeConverter context)
@@ -251,6 +251,28 @@ public class JspTagElementConverter extends CopyElementConverter implements TagC
     private String getAttibuteNamefor(HtmlAttributeValueContext parent)
     {
         return parent.getParent().children.get(0).getText();
+    }
+
+    @Override
+    public List<TagConverter> getOtherApplicableTagConverters()
+    {
+        return asList(alsoConvertsTags)
+                .stream()
+                .map(tagName -> cloneConverterForTag(tagName))
+                .collect(toList());
+    }
+
+    private JspTagElementConverter cloneConverterForTag(String tagName)
+    {
+        JspTagElementConverter converter = converterFor(tagName);
+        converter.newElementName = this.newElementName;
+        converter.newNamespace = this.newNamespace;
+        converter.attributesToRemove = this.attributesToRemove;
+        converter.newAttributeBuilders = this.newAttributeBuilders;
+        converter.newTextContent = this.newTextContent;
+        converter.childAttributeSource = this.childAttributeSource;
+        converter.attributeToUseWhenQuoted = this.attributeToUseWhenQuoted;
+        return converter;
     }
 
 }

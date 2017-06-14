@@ -68,6 +68,14 @@ public class TagConverterSource implements JSPNodeConverterSource, JSPNodeAttrib
 
     public void add(TagConverter converter)
     {
+        if (converter instanceof MultipleTagConverter)
+        {
+            MultipleTagConverter asMultipleConverter = (MultipleTagConverter) converter;
+            asMultipleConverter.getOtherApplicableTagConverters().forEach(otherConverter ->
+            {
+                converterMap.put(otherConverter.getApplicableTag(), otherConverter);
+            });
+        }
         converterMap.put(converter.getApplicableTag(), converter);
     }
 
