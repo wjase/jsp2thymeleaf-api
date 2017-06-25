@@ -17,5 +17,6 @@ public class Namespaces
     public static final Namespace TH = Namespace.getNamespace("th", "http://www.thymeleaf.org");
     public static final Namespace XMLNS = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
     public static final Namespace NONS = Namespace.NO_NAMESPACE;
-    protected final Namespace CN = Namespace.getNamespace("cn", "http://www.cybernostics.com");
+    public static final Namespace CN = Namespace.getNamespace("cn", "http://www.cybernostics.com");
+
 }
