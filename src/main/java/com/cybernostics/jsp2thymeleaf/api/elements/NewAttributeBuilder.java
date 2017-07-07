@@ -34,12 +34,12 @@ public interface NewAttributeBuilder
         }
     }
 
-    public static DefaultAttributeBuilder named(String name, Namespace namespace)
+    public static DefaultAttributeBuilder newAttributeNamed(String name, Namespace namespace)
     {
         return new DefaultAttributeBuilder(name, namespace);
     }
 
-    public static DefaultAttributeBuilder namedTH(String name)
+    public static DefaultAttributeBuilder newTHAttributeNamed(String name)
     {
         return new DefaultAttributeBuilder(name, TH);
     }
