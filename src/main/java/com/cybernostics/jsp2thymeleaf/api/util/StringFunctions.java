@@ -44,7 +44,8 @@ public class StringFunctions
 
     public static String humanReadable(String input)
     {
-        return Arrays.asList(input.replaceAll("(^\\$\\{)|(\\}$)", "").split("\\."))
+        return Arrays.asList(trimQuotes(input).replaceAll("(^\\$\\{)|(\\}$)", "")
+                .split("\\."))
                 .stream()
                 .map(StringFunctions::ucFirst)
                 .collect(Collectors.joining());

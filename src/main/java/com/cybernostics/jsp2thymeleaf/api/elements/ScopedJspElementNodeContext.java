@@ -19,7 +19,7 @@ import org.apache.commons.el.parser.ParseException;
 public class ScopedJspElementNodeContext
 {
 
-    public static ScopedJspElementNodeContext forJspNode(JSPParser.JspElementContext elementContext, JSPElementNodeConverter converter)
+    public static ScopedJspElementNodeContext nodeContext(JSPParser.JspElementContext elementContext, JSPElementNodeConverter converter)
     {
         return new ScopedJspElementNodeContext(converter, elementContext);
     }
@@ -68,7 +68,7 @@ public class ScopedJspElementNodeContext
                 .filter(c -> c instanceof JSPParser.HtmlContentContext)
                 .flatMap(c -> ((JSPParser.HtmlContentContext) c).children.stream())
                 .filter(c -> c instanceof JSPParser.JspElementContext)
-                .map(c -> forJspNode((JSPParser.JspElementContext) c, converter));
+                .map(c -> nodeContext((JSPParser.JspElementContext) c, converter));
     }
 
     public Map<String, String> paramsBy(String key, String value)

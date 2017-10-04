@@ -10,7 +10,9 @@ import java.util.List;
 import org.jdom2.Content;
 
 /**
- *
+ * Converter which takes a JSP node and returns converted nodes. It also
+ * tracks context information on what taglibs are in scope
+ * 
  * @author jason
  */
 public interface JSPElementNodeConverter
@@ -20,7 +22,7 @@ public interface JSPElementNodeConverter
      * Transform node into a list of output Content to be inserted in the target
      * document. It may not necessarily be one output element for each input
      * element. (The input may just get ignored in some circumstances, although
-     * it might be preferrable to replace it with an html comment initially so
+     * it might be preferable to replace it with an html comment initially so
      * nothing gets lost)
      *
      * @param node - input JSP element node to convert

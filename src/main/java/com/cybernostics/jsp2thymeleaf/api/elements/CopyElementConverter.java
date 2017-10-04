@@ -14,9 +14,12 @@ import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import java.util.stream.Stream;
 import static org.apache.commons.collections.ListUtils.EMPTY_LIST;
 import org.jdom2.Attribute;
 import org.jdom2.Content;
@@ -49,7 +52,7 @@ public class CopyElementConverter implements JSPElementNodeConverter
             element.removeNamespaceDeclaration(XMLNS);
             element.addContent(getNewChildContent(node, context));
             addAttributes(element, node, context);
-            return Arrays.asList(element);
+            return Stream.concat(Stream.of(element), getNewAppendedContent(node, context).stream()).collect(toList());
         }
 
         return EMPTY_LIST;
@@ -60,7 +63,17 @@ public class CopyElementConverter implements JSPElementNodeConverter
         return EMPTY_LIST;
     }
 
-    protected List<Attribute> getAttributes(JspElementContext jspNode, JSPElementNodeConverter context)
+    protected List<Content> getNewAppendedContent(JSPParser.JspElementContext node, JSPElementNodeConverter context)
+    {
+        return EMPTY_LIST;
+    }
+
+    protected Map<String,String> getSourceAttributes(JspElementContext jspNode){
+        Map<String, String> attrs = jspNode.atts.stream().collect(toMap(a -> a.name.getText(), a -> a.value.getText()));
+        return attrs;
+    }
+    
+    protected List<Attribute> convertAttributes(JspElementContext jspNode, JSPElementNodeConverter context)
     {
         List<Attribute> attributes = new ArrayList<>();
 
@@ -79,7 +92,7 @@ public class CopyElementConverter implements JSPElementNodeConverter
 
     protected void addAttributes(Element parent, JspElementContext node, JSPElementNodeConverter context)
     {
-        final List<Attribute> attributes = getAttributes(node, context);
+        final List<Attribute> attributes = convertAttributes(node, context);
         List<Attribute> atts = attributes
                 .stream()
                 .map(a ->

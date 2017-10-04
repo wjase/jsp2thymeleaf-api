@@ -19,16 +19,16 @@ import org.jdom2.Namespace;
  *
  * @author jason
  */
-public interface NewAttributeBuilder
+public interface AttributeCreator
 {
 
     List<Attribute> buildNewAttributes(Map<String, Object> currentValues);
 
-    public static class NOPNewAttributeBuilder implements NewAttributeBuilder
+    public static class NOPNewAttributeBuilder implements AttributeCreator
     {
 
         @Override
-        public List<Attribute> buildNewAttributes(Map<String, Object> currentValues)
+        public List<Attribute> buildNewAttributes(Map<String, Object> currentAttributeValues)
         {
             return Arrays.asList();
         }
@@ -44,7 +44,7 @@ public interface NewAttributeBuilder
         return new DefaultAttributeBuilder(name, TH);
     }
 
-    public static class DefaultAttributeBuilder implements NewAttributeBuilder
+    public static class DefaultAttributeBuilder implements AttributeCreator
     {
 
         private String name;
